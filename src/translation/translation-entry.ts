@@ -16,10 +16,11 @@ export class TranslationEntry {
     /** The translation */
     public translation: string = '';
 
+    public match: TranslationMatch = TranslationMatch.Unknown;
+
     /** The files in which this translation occurs */
     public locations: {
         uri: Uri;
         line: Number;
-        match: TranslationMatch;
     }[] = [];
 }

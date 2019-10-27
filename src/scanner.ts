@@ -12,7 +12,7 @@ export class Scanner {
         // "fr"
     ];
 
-    private includeFileExtenstions: string[] = ['ts', 'html'];
+    private includeFileExtenstions: string[] = ['html'];
 
     private translationSets: { [locale: string]: TranslationSet } = {};
 
@@ -42,13 +42,15 @@ export class Scanner {
         return workspace.openTextDocument(Uri.file(`${workspaceFolder}/${this.i18nPath}/${locale}.json`));
     }
 
-    public async analyse() {
-        const urisThenable = this.findFiles(this.includeFileExtenstions);
+    public async analyse(): Promise<TranslationUsage> {
+        let translationUsage: TranslationUsage = new TranslationUsage();
 
-        await urisThenable.then(async uris => {
-            const usage = new TranslationUsage();
-            await usage.analyseUsage(uris, this.translationSets);
+        await this.findFiles(this.includeFileExtenstions).then(async uris => {
+            translationUsage = new TranslationUsage();
+            await translationUsage.analyseUsage(uris, this.translationSets);
         });
+
+        return Promise.resolve(translationUsage);
     }
 
     private findFiles(includeExt: string[]) {

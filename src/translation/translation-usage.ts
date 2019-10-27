@@ -10,11 +10,19 @@ export class TranslationUsage {
 
     public found: { [path: string]: TranslationEntry } = {};
     public missing: { [path: string]: TranslationEntry } = {};
+    public totalFiles: Number = 0;
+    public totalTranslations: { [locale: string]: Number } = {};
 
     public async analyseUsage(uris: Uri[], translationSets: { [locale: string]: TranslationSet }) {
         console.log('\nAnalysing translation usage...');
         console.log('---------------------');
         console.log(`Found ${uris.length} files to scan for translations...\n`);
+
+        this.totalFiles = uris.length;
+
+        Object.keys(translationSets).forEach(locale => {
+            this.totalTranslations[locale] = translationSets[locale].keys.length;
+        });
 
         /*
             Iterate over files and try to regex all candidates. Then match each
@@ -91,7 +99,6 @@ export class TranslationUsage {
                         this.found[path].locations.push({
                             uri: uri,
                             line: line,
-                            match: !isPartialMatch ? TranslationMatch.Match : TranslationMatch.PartialMatch,
                         });
                     } else {
                         // create new entry
@@ -99,11 +106,11 @@ export class TranslationUsage {
                             locale: locale,
                             translationPath: path,
                             translation: !isPartialMatch ? translation : 'unknown',
+                            match: !isPartialMatch ? TranslationMatch.Match : TranslationMatch.PartialMatch,
                             locations: [
                                 {
                                     uri: uri,
                                     line: line,
-                                    match: !isPartialMatch ? TranslationMatch.Match : TranslationMatch.PartialMatch,
                                 },
                             ],
                         });
