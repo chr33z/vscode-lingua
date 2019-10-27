@@ -1,5 +1,5 @@
 import { TranslationSet } from './translation-set';
-import { Uri, workspace, TextDocument, window, ProgressLocation } from 'vscode';
+import { Uri, workspace } from 'vscode';
 import { TranslationEntry } from './translation-entry';
 import { posix } from 'path';
 import { TextDecoder } from 'util';
@@ -8,6 +8,8 @@ import { TranslationMatch } from './translation-match';
 
 export class TranslationUsage {
     private MAX_PATH_REDUCTION = 2;
+
+    private regex = new RegExp(/\'[a-zA-Z\.]+\'/);
 
     public found: { [path: string]: TranslationEntry } = {};
     public missing: { [path: string]: TranslationEntry } = {};
@@ -20,68 +22,45 @@ export class TranslationUsage {
         console.log('---------------------');
         console.log(`Found ${uris.length} files to scan for translations...\n`);
 
+        // uris = uris.splice(0, 60);
+
         /*
             Iterate over files and try to regex all candidates. Then match each
             candiate with all translationSets (dictionaries so quiet a fast lookup )
 
             But: does only find complete strings and not partial ones
         */
-        window.withProgress(
-            {
-                location: ProgressLocation.Notification,
-                title: 'Analysing translation usage...',
-                cancellable: true,
-            },
-            async (progress, token) => {
-                token.onCancellationRequested(() => {
-                    console.log('Canceled translation usage...');
-                });
+        let index = 1;
+        for (const uri of uris) {
+            console.log(
+                `Analysing file (${index}/${uris.length}): ${posix.basename(
+                    uri.path
+                )}`
+            );
 
-                let processedFiles = 0;
-                await Promise.all(
-                    uris.map(async uri => {
-                        await workspace.fs
-                            .readFile(uri)
-                            .then(async fileContent => {
-                                // console.log(
-                                //     `File: ${posix.basename(uri.path)}`
-                                // );
-                                var text = new TextDecoder('utf-8').decode(
-                                    fileContent
-                                );
-                                this.anaylseDocumentUsage(
-                                    uri,
-                                    text,
-                                    translationSets
-                                );
-                            });
+            const fileContent = await workspace.fs.readFile(uri);
+            var text = new TextDecoder('utf-8').decode(fileContent);
 
-                        progress.report({
-                            increment: uris.length / processedFiles,
-                        });
-                    })
-                );
+            this.anaylseDocumentUsage(uri, text, translationSets);
+            index++;
+        }
 
-                let translationKeys = translationSets['de'].keys;
-                let entryKeys = Object.keys(this.found);
+        let translationKeys = translationSets['de'].keys;
+        let entryKeys = Object.keys(this.found);
 
-                translationKeys = translationKeys.filter(function(el) {
-                    return entryKeys.indexOf(el) < 0;
-                });
+        translationKeys = translationKeys.filter(function(el) {
+            return entryKeys.indexOf(el) < 0;
+        });
 
-                console.log(`\nFOUND: ${entryKeys.length} translations`);
-                entryKeys.forEach(key => {
-                    console.log(`FOUND: ${key}`);
-                });
+        console.log(`\nFOUND: ${entryKeys.length} translations`);
+        entryKeys.forEach(key => {
+            console.log(`FOUND: ${key}`);
+        });
 
-                console.log(
-                    `\nMISSING: ${translationKeys.length} translations`
-                );
-                translationKeys.forEach(key => {
-                    console.log(`MISSING: ${key}`);
-                });
-            }
-        );
+        // console.log(`\nMISSING: ${translationKeys.length} translations`);
+        // translationKeys.forEach(key => {
+        //     console.log(`MISSING: ${key}`);
+        // });
     }
 
     public anaylseDocumentUsage(
@@ -89,22 +68,18 @@ export class TranslationUsage {
         text: string,
         translationSets: { [locale: string]: TranslationSet }
     ) {
-        if (uri.path.endsWith('article-detail.page.html')) {
-            console.log('WEW');
-        }
-
         // Important: Use non-greedy search!
         // Otherwise regex engine crashes
-        const searchPattern = /'(\w+[\.]*)+?'/gm;
+        // const searchPattern = /'(\w+[k c\.]*?)+?'/;
         const lines = text.split('\n');
 
         let lineNumber = 1;
         for (const line of lines) {
-            const result = line.match(searchPattern);
+            const matches = this.regex.exec(line);
 
-            if (result) {
+            if (matches) {
                 this.processSearchResults(
-                    result,
+                    matches,
                     uri,
                     lineNumber,
                     translationSets
@@ -121,16 +96,18 @@ export class TranslationUsage {
         translationSets: { [locale: string]: TranslationSet }
     ) {
         matches.forEach(match => {
-            const path = this.stripPath(match);
-            Object.keys(translationSets).forEach(key => {
-                this.matchTranslationPath(
-                    path,
-                    uri,
-                    line,
-                    key,
-                    translationSets
-                );
-            });
+            const path = this.preparePath(match);
+
+            if (path === 'fax.numberedStatus')
+                Object.keys(translationSets).forEach(key => {
+                    this.matchTranslationPath(
+                        path,
+                        uri,
+                        line,
+                        key,
+                        translationSets
+                    );
+                });
         });
     }
 
@@ -153,10 +130,10 @@ export class TranslationUsage {
         let pathLength = path.split('.').length;
         let isPartialPath = false;
 
+        console.log(partialPath);
+
         let rounds = this.MAX_PATH_REDUCTION;
         while (pathLength > 1 && rounds > 0) {
-            console.log(`Checking path: ${partialPath}`);
-
             const translation = translationSets[locale].contains(partialPath);
 
             if (translation) {
@@ -192,25 +169,31 @@ export class TranslationUsage {
             }
 
             pathLength = partialPath.split('.').length;
-            rounds--;
 
             // reduce path by the last segment and try again.
             // Last paths are completed by a variable so the last character
             // is a dot '.'
-            if (pathLength > 2 && rounds > 0) {
+            if (pathLength > 1 && rounds > 0) {
                 partialPath =
                     partialPath
                         .split('.')
                         .splice(0, pathLength - 1)
                         .reduce((i, j) => i + '.' + j) + '.';
                 isPartialPath = true;
+            } else {
+                break;
             }
+
+            rounds--;
         }
     }
 
-    private stripPath(path: string) {
+    private preparePath(path: string) {
         path = path.trim();
         path = path.replace(/'/g, '');
+        if (path.endsWith('.')) {
+            path = path.slice(0, path.length - 1);
+        }
         return path;
     }
 }
