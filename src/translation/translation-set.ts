@@ -1,4 +1,5 @@
 import { isArray } from 'util';
+import { Uri, workspace } from 'vscode';
 
 export class TranslationSet {
     private _mainTranslationSet: { [path: string]: string } = {};

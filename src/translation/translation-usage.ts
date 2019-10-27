@@ -1,9 +1,9 @@
-import { TranslationSet } from './translation-set';
 import { Uri, workspace } from 'vscode';
 import { TranslationEntry } from './translation-entry';
 import { posix } from 'path';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from './translation-match';
+import { TranslationSets } from './translation-sets';
 
 export class TranslationUsage {
     private regex = new RegExp(/\'[a-zA-Z\.]+\'/g);
@@ -13,20 +13,23 @@ export class TranslationUsage {
     public totalFiles: Number = 0;
     public totalTranslations: { [locale: string]: Number } = {};
 
-    public async analyseUsage(uris: Uri[], translationSets: { [locale: string]: TranslationSet }) {
+    public async analyse(fileTypes: string[], translationSets: TranslationSets) {
         console.log('\nAnalysing translation usage...');
         console.log('---------------------');
+
+        const uris = await this.findFiles(fileTypes);
+
         console.log(`Found ${uris.length} files to scan for translations...\n`);
 
         this.totalFiles = uris.length;
 
-        Object.keys(translationSets).forEach(locale => {
-            this.totalTranslations[locale] = translationSets[locale].keys.length;
+        Object.keys(translationSets.get).forEach(locale => {
+            this.totalTranslations[locale] = translationSets.get[locale].keys.length;
         });
 
         /*
             Iterate over files and try to regex all candidates. Then match each
-            candiate with all translationSets (dictionaries so quiet a fast lookup )
+            candiate with all translationSets (dictionaries so quite a fast lookup )
 
             But: does only find complete strings and not partial ones
         */
@@ -41,7 +44,7 @@ export class TranslationUsage {
             index++;
         }
 
-        let translationKeys = translationSets['de'].keys;
+        let translationKeys = translationSets.get['de'].keys;
         let entryKeys = Object.keys(this.found);
 
         translationKeys = translationKeys.filter(function(el) {
@@ -57,9 +60,11 @@ export class TranslationUsage {
         translationKeys.forEach(key => {
             console.log(`MISSING: ${key}`);
         });
+
+        return Promise.resolve(this);
     }
 
-    public anaylseDocumentUsage(uri: Uri, text: string, translationSets: { [locale: string]: TranslationSet }) {
+    public anaylseDocumentUsage(uri: Uri, text: string, translationSets: TranslationSets) {
         const lines = text.split('\n');
 
         let lineNumber = 1;
@@ -73,18 +78,13 @@ export class TranslationUsage {
         }
     }
 
-    private processSearchResults(
-        matches: RegExpMatchArray,
-        uri: Uri,
-        line: Number,
-        translationSets: { [locale: string]: TranslationSet }
-    ) {
+    private processSearchResults(matches: RegExpMatchArray, uri: Uri, line: Number, translationSets: TranslationSets) {
         matches.forEach(match => {
             const path = this.preparePath(match);
 
-            Object.keys(translationSets).forEach(locale => {
-                let translation: string | null = translationSets[locale].hasTranslation(path);
-                let isPartialMatch = translationSets[locale].isPartialMatch(path);
+            Object.keys(translationSets.get).forEach(locale => {
+                let translation: string | null = translationSets.get[locale].hasTranslation(path);
+                let isPartialMatch = translationSets.get[locale].isPartialMatch(path);
 
                 // Constructor is a keyword, that cannot be used as a key in dictionaries
                 // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
@@ -128,5 +128,11 @@ export class TranslationUsage {
             path = path.slice(0, path.length - 1);
         }
         return path;
+    }
+
+    private findFiles(includeExt: string[]) {
+        const searchPattern = `**/src/**/*.{${includeExt.reduce((i, j) => i + ',' + j)}}`;
+        const excludePattern = `**/node_modules/**`;
+        return workspace.findFiles(searchPattern, excludePattern);
     }
 }

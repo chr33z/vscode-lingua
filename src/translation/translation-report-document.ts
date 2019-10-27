@@ -78,7 +78,7 @@ export default class TranslationReportDocument {
 
             if (entry.match === TranslationMatch.PartialMatch) {
                 this._lines.push(`Path (${entry.locale}):\t\t${entry.translationPath}`);
-                this._lines.push(`Translation:\t---}`);
+                this._lines.push(`Translation:\t---`);
 
                 for (const location of entry.locations) {
                     this._lines.push(`In file:\t\t${location.uri} (${location.line})`);

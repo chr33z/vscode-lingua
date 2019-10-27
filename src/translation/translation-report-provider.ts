@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { Scanner } from '../scanner';
 import TranslationReportDocument from './translation-report-document';
+import { TranslationSets } from './translation-sets';
+import { Uri, workspace } from 'vscode';
+import { TranslationUsage } from './translation-usage';
 
 export default class TranslationReportProvider
     implements vscode.TextDocumentContentProvider, vscode.DocumentLinkProvider {
@@ -24,25 +27,18 @@ export default class TranslationReportProvider
         this._onDidChange.dispose();
     }
 
-    // Expose an event to signal changes of _virtual_ documents
-    // to the editor
     get onDidChange() {
         return this._onDidChange.event;
     }
 
-    // Provider method that takes an uri of the `lingua`-scheme and
-    // resolves its content by (1) running the reference search command
-    // and (2) formatting the results
-    provideTextDocumentContent(uri: vscode.Uri): string | Thenable<string> {
-        // already loaded?
-        // let document = this._documents.get(uri.toString());
-        // if (document) {
-        //     return document.value;
-        // }
-
-        const scanner = new Scanner();
-        scanner.scanLanguageFiles();
-        return scanner.analyse().then(translationUsage => {
+    async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
+        const localeFiles = [
+            { locale: 'de', uri: Uri.file(`${workspace.rootPath}/src/assets/i18n/de.json`) },
+            { locale: 'en', uri: Uri.file(`${workspace.rootPath}/src/assets/i18n/en.json`) },
+        ];
+        const fileTypes = ['ts', 'html'];
+        const translationSets = await TranslationSets.build(localeFiles);
+        return new TranslationUsage().analyse(fileTypes, translationSets).then(translationUsage => {
             let document = new TranslationReportDocument(uri, translationUsage, this._onDidChange);
             return document.value;
         });
@@ -52,9 +48,6 @@ export default class TranslationReportProvider
         document: vscode.TextDocument,
         token: vscode.CancellationToken
     ): vscode.DocumentLink[] | undefined {
-        // While building the virtual document we have already created the links.
-        // Those are composed from the range inside the document and a target uri
-        // to which they point
         const doc = this._documents.get(document.uri.toString());
         if (doc) {
             return doc.links;
