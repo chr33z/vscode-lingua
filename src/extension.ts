@@ -14,30 +14,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     const scanner = new Scanner();
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
-    let linguaScan = vscode.commands.registerCommand(
-        'lingua.scan',
-        async () => {
-            vscode.window.showInformationMessage(
-                'Scanning for language files...'
-            );
-            scanner.scanLanguageFiles();
-        }
-    );
-    context.subscriptions.push(linguaScan);
-
-    let linguaAnalyse = vscode.commands.registerCommand(
-        'lingua.analyse',
-        async () => {
-            vscode.window.showInformationMessage(
-                'Analysing translation usage...'
-            );
-            await scanner.scanLanguageFiles();
-            await scanner.analyse();
-        }
-    );
+    let linguaAnalyse = vscode.commands.registerCommand('lingua.analyse', async () => {
+        await scanner.scanLanguageFiles();
+        await scanner.analyse();
+    });
     context.subscriptions.push(linguaAnalyse);
 }
 

@@ -1,6 +1,5 @@
 import { TranslationSet } from './translation/translation-set';
-import { TextDocument, workspace, Uri, FileType, tasks, window } from 'vscode';
-import { posix } from 'path';
+import { TextDocument, workspace, Uri } from 'vscode';
 import * as _ from 'lodash';
 import { TranslationUsage } from './translation/translation-usage';
 
@@ -14,8 +13,6 @@ export class Scanner {
     ];
 
     private includeFileExtenstions: string[] = ['ts', 'html'];
-
-    private includeDirectories: string[] = ['src'];
 
     private translationSets: { [locale: string]: TranslationSet } = {};
 
@@ -42,25 +39,20 @@ export class Scanner {
     // TODO: use findFiles function to get json
     private getLocaleFile(locale: string): Thenable<TextDocument> {
         const workspaceFolder = workspace.rootPath;
-        return workspace.openTextDocument(
-            Uri.file(`${workspaceFolder}/${this.i18nPath}/${locale}.json`)
-        );
+        return workspace.openTextDocument(Uri.file(`${workspaceFolder}/${this.i18nPath}/${locale}.json`));
     }
 
-    public async analyse(locale: string = '') {
+    public async analyse() {
         const urisThenable = this.findFiles(this.includeFileExtenstions);
 
         await urisThenable.then(async uris => {
             const usage = new TranslationUsage();
-
             await usage.analyseUsage(uris, this.translationSets);
         });
     }
 
     private findFiles(includeExt: string[]) {
-        const searchPattern = `**/src/**/*.{${includeExt.reduce(
-            (i, j) => i + ',' + j
-        )}}`;
+        const searchPattern = `**/src/**/*.{${includeExt.reduce((i, j) => i + ',' + j)}}`;
         const excludePattern = `**/node_modules/**`;
         return workspace.findFiles(searchPattern, excludePattern);
     }

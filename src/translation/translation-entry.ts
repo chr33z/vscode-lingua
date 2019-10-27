@@ -16,9 +16,6 @@ export class TranslationEntry {
     /** The translation */
     public translation: string = '';
 
-    /** The last known usage of the translation */
-    public usage: Usage = Usage.Unknown;
-
     /** The files in which this translation occurs */
     public locations: {
         uri: Uri;

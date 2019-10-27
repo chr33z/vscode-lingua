@@ -3,26 +3,18 @@ import { Uri, workspace } from 'vscode';
 import { TranslationEntry } from './translation-entry';
 import { posix } from 'path';
 import { TextDecoder } from 'util';
-import { Usage } from './usage';
 import { TranslationMatch } from './translation-match';
 
 export class TranslationUsage {
-    private MAX_PATH_REDUCTION = 2;
-
-    private regex = new RegExp(/\'[a-zA-Z\.]+\'/);
+    private regex = new RegExp(/\'[a-zA-Z\.]+\'/g);
 
     public found: { [path: string]: TranslationEntry } = {};
     public missing: { [path: string]: TranslationEntry } = {};
 
-    public async analyseUsage(
-        uris: Uri[],
-        translationSets: { [locale: string]: TranslationSet }
-    ) {
+    public async analyseUsage(uris: Uri[], translationSets: { [locale: string]: TranslationSet }) {
         console.log('\nAnalysing translation usage...');
         console.log('---------------------');
         console.log(`Found ${uris.length} files to scan for translations...\n`);
-
-        // uris = uris.splice(0, 60);
 
         /*
             Iterate over files and try to regex all candidates. Then match each
@@ -32,11 +24,7 @@ export class TranslationUsage {
         */
         let index = 1;
         for (const uri of uris) {
-            console.log(
-                `Analysing file (${index}/${uris.length}): ${posix.basename(
-                    uri.path
-                )}`
-            );
+            console.log(`Analysing file (${index}/${uris.length}): ${posix.basename(uri.path)}`);
 
             const fileContent = await workspace.fs.readFile(uri);
             var text = new TextDecoder('utf-8').decode(fileContent);
@@ -57,20 +45,13 @@ export class TranslationUsage {
             console.log(`FOUND: ${key}`);
         });
 
-        // console.log(`\nMISSING: ${translationKeys.length} translations`);
-        // translationKeys.forEach(key => {
-        //     console.log(`MISSING: ${key}`);
-        // });
+        console.log(`\nMISSING: ${translationKeys.length} translations`);
+        translationKeys.forEach(key => {
+            console.log(`MISSING: ${key}`);
+        });
     }
 
-    public anaylseDocumentUsage(
-        uri: Uri,
-        text: string,
-        translationSets: { [locale: string]: TranslationSet }
-    ) {
-        // Important: Use non-greedy search!
-        // Otherwise regex engine crashes
-        // const searchPattern = /'(\w+[k c\.]*?)+?'/;
+    public anaylseDocumentUsage(uri: Uri, text: string, translationSets: { [locale: string]: TranslationSet }) {
         const lines = text.split('\n');
 
         let lineNumber = 1;
@@ -78,12 +59,7 @@ export class TranslationUsage {
             const matches = this.regex.exec(line);
 
             if (matches) {
-                this.processSearchResults(
-                    matches,
-                    uri,
-                    lineNumber,
-                    translationSets
-                );
+                this.processSearchResults(matches, uri, lineNumber, translationSets);
             }
             lineNumber++;
         }
@@ -98,94 +74,44 @@ export class TranslationUsage {
         matches.forEach(match => {
             const path = this.preparePath(match);
 
-            if (path === 'fax.numberedStatus')
-                Object.keys(translationSets).forEach(key => {
-                    this.matchTranslationPath(
-                        path,
-                        uri,
-                        line,
-                        key,
-                        translationSets
-                    );
-                });
-        });
-    }
+            Object.keys(translationSets).forEach(locale => {
+                let translation: string | null = translationSets[locale].hasTranslation(path);
+                let isPartialMatch = translationSets[locale].isPartialMatch(path);
 
-    private matchTranslationPath(
-        path: string,
-        uri: Uri,
-        line: Number,
-        locale: string,
-        translationSets: { [locale: string]: TranslationSet }
-    ) {
-        /*
-            The idea is to match the regexed pathes with the paths from the translationsets.
-            To do this we first try to match the whole path, but also want to match parts of it.
-            
-            Therefore, after each match round, we remove the last part of the path and try to match 
-            again. The amount how often we reduce the path is determined by MAX_PATH_REDUCTION.
-        */
-
-        let partialPath = path;
-        let pathLength = path.split('.').length;
-        let isPartialPath = false;
-
-        console.log(partialPath);
-
-        let rounds = this.MAX_PATH_REDUCTION;
-        while (pathLength > 1 && rounds > 0) {
-            const translation = translationSets[locale].contains(partialPath);
-
-            if (translation) {
-                // check if path was already found in another file
-                if (this.found[partialPath]) {
-                    // Only update found locations
-                    this.found[partialPath].locations.push({
-                        uri: uri,
-                        line: line,
-                        match: !isPartialPath
-                            ? TranslationMatch.Match
-                            : TranslationMatch.PartialMatch,
-                    });
-                } else {
-                    // create new entry
-                    const newEntry = Object.assign(new TranslationEntry(), {
-                        locale: locale,
-                        translationPath: partialPath,
-                        translation: translation,
-                        usage: Usage.Used,
-                        locations: [
-                            {
-                                uri: uri,
-                                line: line,
-                                match: !isPartialPath
-                                    ? TranslationMatch.Match
-                                    : TranslationMatch.PartialMatch,
-                            },
-                        ],
-                    });
-                    this.found[partialPath] = newEntry;
+                // Constructor is a keyword, that cannot be used as a key in dictionaries
+                // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+                if (path === 'constructor') {
+                    translation = null;
                 }
-            }
 
-            pathLength = partialPath.split('.').length;
-
-            // reduce path by the last segment and try again.
-            // Last paths are completed by a variable so the last character
-            // is a dot '.'
-            if (pathLength > 1 && rounds > 0) {
-                partialPath =
-                    partialPath
-                        .split('.')
-                        .splice(0, pathLength - 1)
-                        .reduce((i, j) => i + '.' + j) + '.';
-                isPartialPath = true;
-            } else {
-                break;
-            }
-
-            rounds--;
-        }
+                if (translation || isPartialMatch) {
+                    // check if path was already found in another file
+                    if (this.found[path]) {
+                        // Only update found locations
+                        this.found[path].locations.push({
+                            uri: uri,
+                            line: line,
+                            match: !isPartialMatch ? TranslationMatch.Match : TranslationMatch.PartialMatch,
+                        });
+                    } else {
+                        // create new entry
+                        const newEntry = Object.assign(new TranslationEntry(), {
+                            locale: locale,
+                            translationPath: path,
+                            translation: !isPartialMatch ? translation : 'unknown',
+                            locations: [
+                                {
+                                    uri: uri,
+                                    line: line,
+                                    match: !isPartialMatch ? TranslationMatch.Match : TranslationMatch.PartialMatch,
+                                },
+                            ],
+                        });
+                        this.found[path] = newEntry;
+                    }
+                }
+            });
+        });
     }
 
     private preparePath(path: string) {
