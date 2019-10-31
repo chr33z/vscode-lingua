@@ -4,7 +4,9 @@ import { TranslationSet } from './translation-set';
 export class TranslationSets {
     public translationSets: { [path: string]: TranslationSet } = {};
 
-    public get get(): { [path: string]: TranslationSet } {
+    public uris: { [locale: string]: Uri } = {};
+
+    public get get(): { [locale: string]: TranslationSet } {
         return this.translationSets;
     }
 
@@ -16,7 +18,7 @@ export class TranslationSets {
                     if (document) {
                         const json = document.getText();
                         const translationSet = new TranslationSet();
-                        translationSet.build(JSON.parse(json));
+                        translationSet.build(localeFile.uri, JSON.parse(json));
                         translationSets.translationSets[localeFile.locale] = translationSet;
                     }
                 });

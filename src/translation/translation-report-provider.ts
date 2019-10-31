@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { Scanner } from '../scanner';
 import TranslationReportDocument from './translation-report-document';
 import { TranslationSets } from './translation-sets';
 import { Uri, workspace } from 'vscode';

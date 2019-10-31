@@ -1,4 +1,3 @@
-import { Usage } from './usage';
 import { Uri } from 'vscode';
 import { TranslationMatch } from './translation-match';
 

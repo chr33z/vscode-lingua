@@ -5,6 +5,12 @@ export class TranslationSet {
     private _mainTranslationSet: { [path: string]: string } = {};
     private _secondaryTranslationSet: Set<string> = new Set();
 
+    public _file: string = '';
+
+    public get uri(): Uri {
+        return Uri.file(this._file);
+    }
+
     public hasTranslation(path: string): string | null {
         if (this._mainTranslationSet[path]) {
             return this._mainTranslationSet[path];
@@ -21,11 +27,13 @@ export class TranslationSet {
         return Object.keys(this._mainTranslationSet);
     }
 
-    public async build(languageDefinition: object) {
+    public async build(uri: Uri, languageDefinition: object) {
         console.log(`\nScanning for translation entries...`);
         console.log('---------------------');
 
         console.log('Building main translation set...');
+        this._file = uri.path;
+
         let translationEntries = 0;
 
         Object.entries(languageDefinition).forEach(entries => {
