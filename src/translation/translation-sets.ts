@@ -1,4 +1,4 @@
-import { workspace, Uri } from 'vscode';
+import { workspace, Uri, window } from 'vscode';
 import { TranslationSet } from './translation-set';
 
 export class TranslationSets {
@@ -10,21 +10,23 @@ export class TranslationSets {
         return this.translationSets;
     }
 
-    static async build(localeFiles: { locale: string; uri: Uri }[]) {
-        const translationSets = new TranslationSets();
+    async build(localeFiles: { locale: string; uri: Uri }[]) {
         await Promise.all(
             localeFiles.map(async localeFile => {
-                await workspace.openTextDocument(localeFile.uri).then(document => {
-                    if (document) {
-                        const json = document.getText();
-                        const translationSet = new TranslationSet();
-                        translationSet.build(localeFile.uri, JSON.parse(json));
-                        translationSets.translationSets[localeFile.locale] = translationSet;
-                    }
-                });
+                try {
+                    const absoluteUri = Uri.file(`${workspace.rootPath}/${localeFile.uri}`);
+                    await workspace.openTextDocument(absoluteUri).then(document => {
+                        if (document) {
+                            const json = document.getText();
+                            const translationSet = new TranslationSet();
+                            translationSet.build(absoluteUri, JSON.parse(json));
+                            this.translationSets[localeFile.locale] = translationSet;
+                        }
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
             })
         );
-
-        return translationSets;
     }
 }

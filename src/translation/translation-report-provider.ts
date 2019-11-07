@@ -12,7 +12,7 @@ export default class TranslationReportProvider
     private _documents = new Map<string, TranslationReportDocument>();
     private _subscriptions: vscode.Disposable;
 
-    constructor() {
+    constructor(private _linguaSettings: any, private _translationSets: TranslationSets) {
         // Listen to the `closeTextDocument`-event which means we must
         // clear the corresponding model object - `TranslationReportDocument`
         this._subscriptions = vscode.workspace.onDidCloseTextDocument(doc =>
@@ -31,16 +31,12 @@ export default class TranslationReportProvider
     }
 
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-        const localeFiles = [
-            { locale: 'de', uri: Uri.file(`${workspace.rootPath}/src/assets/i18n/de.json`) },
-            { locale: 'en', uri: Uri.file(`${workspace.rootPath}/src/assets/i18n/en.json`) },
-        ];
-        const fileTypes = ['ts', 'html'];
-        const translationSets = await TranslationSets.build(localeFiles);
-        return new TranslationUsage().analyse(fileTypes, translationSets).then(translationUsage => {
-            let document = new TranslationReportDocument(uri, translationUsage, this._onDidChange);
-            return document.value;
-        });
+        return new TranslationUsage()
+            .analyse(this._linguaSettings.scanFiles, this._translationSets)
+            .then(translationUsage => {
+                let document = new TranslationReportDocument(uri, translationUsage, this._onDidChange);
+                return document.value;
+            });
     }
 
     provideDocumentLinks(
