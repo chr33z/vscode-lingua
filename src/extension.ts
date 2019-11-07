@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { workspace, languages, Disposable, window, Uri } from 'vscode';
 import TranslationReportProvider from './translation/translation-report-provider';
@@ -12,8 +10,6 @@ import { resolve } from 'dns';
 var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
     const settings = await readSettings();
 
@@ -26,6 +22,9 @@ export async function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(provider, providerRegistrations);
 
+    /*
+        Analyse translation usage across all files declared in .lingua
+    */
     context.subscriptions.push(
         vscode.commands.registerCommand('lingua.analyse', async () => {
             updateTranslationSets(settings, translationSets).then(async () => {
@@ -36,17 +35,22 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    /*
+        Go to a specific translation by selecting npthe translation path and select this command
+        with the contect menu
+    */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async editor => {
             updateTranslationSets(settings, translationSets).then(() => {
                 const selection: vscode.Selection = editor.selection;
-                const selectedText = editor.document.getText(selection);
-
-                locateTranslation(translationSets.get['de'], selectedText);
+                locateTranslation(translationSets.get['de'], editor.document, selection);
             });
         })
     );
 
+    /*
+        Set the currently opened file as the translation *.json
+    */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async editor => {
             const localeUri = editor.document.uri;
@@ -103,6 +107,11 @@ async function writeSettings(settings: LinguaSettings, key: string, value: any) 
     }
 }
 
+/**
+    Update all translation sets that are declared in .lingua config.
+    A translation set contains all translation paths and its corresponding translations.
+    For each [locale].json there can be a seperate translation set
+*/
 async function updateTranslationSets(settings: LinguaSettings, translationSets: TranslationSets): Promise<void> {
     if (settings.translationFiles.length) {
         await translationSets.build(settings.translationFiles);
