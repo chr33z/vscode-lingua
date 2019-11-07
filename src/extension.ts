@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
-import { workspace, languages, Disposable, window, Uri } from 'vscode';
+import { workspace, languages, Disposable, window, Uri, TextDocument } from 'vscode';
 import TranslationReportProvider from './translation/translation-report-provider';
 import { TranslationSets } from './translation/translation-sets';
 import { locateTranslation } from './translation/translation-locator';
 import { assign } from 'lodash';
 import { LinguaSettings } from './lingua-settings';
 import { resolve } from 'dns';
+import { createTranslation } from './translation/translation-creator';
+import { TextDecoder } from 'util';
 
 var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
@@ -41,10 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
     */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async editor => {
-            updateTranslationSets(settings, translationSets).then(() => {
-                const selection: vscode.Selection = editor.selection;
-                locateTranslation(translationSets.get['de'], editor.document, selection);
-            });
+            gotoTranslation(settings, translationSets, editor.document, editor.selection);
         })
     );
 
@@ -65,9 +64,31 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         })
     );
+
+    context.subscriptions.push(
+        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async editor => {
+            updateTranslationSets(settings, translationSets).then(() => {
+                const selection: vscode.Selection = editor.selection;
+                createTranslation(translationSets, editor.document, selection).then(() => {
+                    gotoTranslation(settings, translationSets, editor.document, editor.selection);
+                });
+            });
+        })
+    );
 }
 
 export function deactivate() {}
+
+async function gotoTranslation(
+    settings: LinguaSettings,
+    translationSets: TranslationSets,
+    document: TextDocument,
+    selection: vscode.Selection
+) {
+    updateTranslationSets(settings, translationSets).then(() => {
+        locateTranslation(translationSets.get['de'], document, selection);
+    });
+}
 
 async function readSettings(): Promise<LinguaSettings> {
     if (workspace.workspaceFolders) {

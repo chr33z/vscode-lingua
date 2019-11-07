@@ -1,7 +1,6 @@
 import { workspace, Range, Position, window, TextDocument, Selection } from 'vscode';
 import { TranslationSet } from './translation-set';
 import { posix } from 'path';
-import { start } from 'repl';
 const jsonSourceMap = require('json-source-map');
 
 export async function locateTranslation(translationSet: TranslationSet, document: TextDocument, selection: Selection) {
