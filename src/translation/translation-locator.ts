@@ -5,15 +5,9 @@ import { start } from 'repl';
 const jsonSourceMap = require('json-source-map');
 
 export async function locateTranslation(translationSet: TranslationSet, document: TextDocument, selection: Selection) {
-    let range = selection.with();
-    let path = '';
+    let range = selectTranslationPath(document, selection);
 
-    if (selection.isEmpty) {
-        // search start end end of possible translation path and use that selection
-        range = searchTranslationPath(document, selection);
-    }
-
-    path = document.getText(range);
+    let path = document.getText(range);
     path = cleanTranslationPath(path);
 
     if (!path.match(/^[a-zA-Z\.\_]+$/)) {
@@ -41,7 +35,7 @@ export async function locateTranslation(translationSet: TranslationSet, document
     window.showTextDocument(doc, { selection: selectionRange });
 }
 
-function searchTranslationPath(document: TextDocument, selection: Selection) {
+function selectTranslationPath(document: TextDocument, selection: Selection) {
     // get the selected line
     const line = document.getText(
         new Range(new Position(selection.start.line, 0), new Position(selection.start.line + 1, 0))
