@@ -1,6 +1,19 @@
 import { TextEditor, DecorationOptions, Range, window, OverviewRulerLane, ThemeColor } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
 
+const translationDecoration = window.createTextEditorDecorationType({
+    borderRadius: '3px',
+    borderWidth: '1px',
+    borderStyle: 'dotted',
+    overviewRulerLane: OverviewRulerLane.Right,
+    light: {
+        borderColor: '#001f3fFF',
+    },
+    dark: {
+        borderColor: '#0074D9FF',
+    },
+});
+
 /**
  * Scan editor content for possible translations paths and decorate the translation paths
  * with a hover overlay containing the translation
@@ -28,19 +41,6 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
             translationDecorations.push(decoration);
         }
     }
-
-    let translationDecoration = window.createTextEditorDecorationType({
-        borderRadius: '3px',
-        borderWidth: '1px',
-        borderStyle: 'dotted',
-        overviewRulerLane: OverviewRulerLane.Right,
-        light: {
-            borderColor: '#001f3fFF',
-        },
-        dark: {
-            borderColor: '#0074D9FF',
-        },
-    });
 
     editor.setDecorations(translationDecoration, translationDecorations);
 }
