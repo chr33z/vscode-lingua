@@ -5,16 +5,14 @@ import { TranslationSets } from './translation/translation-sets';
 import { locateTranslation } from './translation/translation-locator';
 import { assign } from 'lodash';
 import { LinguaSettings } from './lingua-settings';
-import { resolve } from 'dns';
 import { createTranslation } from './translation/translation-creator';
-import { TextDecoder } from 'util';
+import { updateTranslationDecorations } from './decoration';
 
 var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
 
 export async function activate(context: vscode.ExtensionContext) {
     const settings = await readSettings();
-
     let translationSets = new TranslationSets();
 
     const provider = new TranslationReportProvider(settings, translationSets);
@@ -74,6 +72,36 @@ export async function activate(context: vscode.ExtensionContext) {
                 });
             });
         })
+    );
+
+    let activeEditor = vscode.window.activeTextEditor;
+
+    if (activeEditor) {
+        await updateTranslationSets(settings, translationSets);
+        updateTranslationDecorations(activeEditor, translationSets.default);
+    }
+
+    vscode.window.onDidChangeActiveTextEditor(
+        async editor => {
+            activeEditor = editor;
+            if (editor) {
+                await updateTranslationSets(settings, translationSets);
+                updateTranslationDecorations(editor, translationSets.default);
+            }
+        },
+        null,
+        context.subscriptions
+    );
+
+    vscode.workspace.onDidChangeTextDocument(
+        async event => {
+            if (activeEditor && event.document === activeEditor.document) {
+                await updateTranslationSets(settings, translationSets);
+                updateTranslationDecorations(activeEditor, translationSets.default);
+            }
+        },
+        null,
+        context.subscriptions
     );
 }
 
@@ -135,7 +163,7 @@ async function writeSettings(settings: LinguaSettings, key: string, value: any) 
 */
 async function updateTranslationSets(settings: LinguaSettings, translationSets: TranslationSets): Promise<void> {
     if (settings.translationFiles.length) {
-        await translationSets.build(settings.translationFiles);
+        await translationSets.build(settings);
         return Promise.resolve();
     } else {
         window.showWarningMessage(
