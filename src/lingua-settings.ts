@@ -1,13 +1,34 @@
 import { Uri } from 'vscode';
 
 export class LinguaSettings {
+    /**
+     * Defaults for when there is no settings file yet
+     */
     public static Default: LinguaSettings = {
-        scanFiles: ['ts', 'html'],
+        analysisFiles: ['ts', 'html'],
         translationFiles: [],
-        defaultLocale: 'de',
+        defaultLang: 'de',
+        showPotentialTranslationIdentifieres: true,
     };
 
-    public scanFiles: string[] = [];
-    public translationFiles: { locale: string; uri: Uri }[] = [];
-    public defaultLocale: string = '';
+    /**
+     * List if file type endings that are scanned for translation statistics
+     */
+    public analysisFiles: string[] = [];
+
+    /**
+     * key-value pair of languages associated with their corresponding json file
+     */
+    public translationFiles: { lang: string; uri: Uri }[] = [];
+
+    /**
+     * The current default language
+     */
+    public defaultLang: string = '';
+
+    /**
+     * If true the decorator will underline potential translation identifiers
+     * that have no translation yet
+     */
+    public showPotentialTranslationIdentifieres: boolean = false;
 }

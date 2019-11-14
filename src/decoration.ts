@@ -1,11 +1,11 @@
 import { TextEditor, DecorationOptions, Range, window, OverviewRulerLane, ThemeColor } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
+import { LinguaSettings } from './lingua-settings';
 
 const translationDecoration = window.createTextEditorDecorationType({
     borderRadius: '3px',
     borderWidth: '1px',
     borderStyle: 'dotted',
-    overviewRulerLane: OverviewRulerLane.Right,
     light: {
         borderColor: '#001f3fFF',
     },
@@ -14,33 +14,54 @@ const translationDecoration = window.createTextEditorDecorationType({
     },
 });
 
+const potentialIdentifierDecoration = window.createTextEditorDecorationType({
+    light: {
+        textDecoration: 'underline #FF851B',
+    },
+    dark: {
+        textDecoration: 'underline #FFDC00',
+    },
+});
+
 /**
  * Scan editor content for possible translations paths and decorate the translation paths
  * with a hover overlay containing the translation
  */
-export function updateTranslationDecorations(editor: TextEditor, translationSet: TranslationSet | null) {
+export function updateTranslationDecorations(
+    editor: TextEditor,
+    settings: LinguaSettings,
+    translationSet: TranslationSet | null
+) {
     if (!editor || !translationSet) {
         return;
     }
     const regEx = /'[a-zA-Z\.\_]+'/gm;
     const text = editor.document.getText();
     const translationDecorations: DecorationOptions[] = [];
+    const identifierDecorations: DecorationOptions[] = [];
 
     let match;
     while ((match = regEx.exec(text))) {
         const path = match[0].replace(/['|"']/g, '');
         const translation = translationSet.hasTranslation(path);
 
+        const startPos = editor.document.positionAt(match.index);
+        const endPos = editor.document.positionAt(match.index + match[0].length);
+
         if (translation) {
-            const startPos = editor.document.positionAt(match.index);
-            const endPos = editor.document.positionAt(match.index + match[0].length);
             const decoration = {
                 range: new Range(startPos, endPos),
                 hoverMessage: translation,
             };
             translationDecorations.push(decoration);
+        } else if (settings.showPotentialTranslationIdentifieres) {
+            const decoration = {
+                range: new Range(startPos, endPos),
+            };
+            identifierDecorations.push(decoration);
         }
     }
 
     editor.setDecorations(translationDecoration, translationDecorations);
+    editor.setDecorations(potentialIdentifierDecoration, identifierDecorations);
 }

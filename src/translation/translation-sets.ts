@@ -24,8 +24,8 @@ export class TranslationSets {
         if (!this._settings || Object.keys(this._translationSets).length === 0) {
             return null;
         }
-        const defaultLocale = this._settings.defaultLocale
-            ? this._settings.defaultLocale
+        const defaultLocale = this._settings.defaultLang
+            ? this._settings.defaultLang
             : Object.keys(this._translationSets)[0];
         return this._translationSets[defaultLocale];
     }
@@ -42,7 +42,7 @@ export class TranslationSets {
                             const json = document.getText();
                             const translationSet = new TranslationSet();
                             translationSet.build(absoluteUri, JSON.parse(json));
-                            this._translationSets[localeFile.locale] = translationSet;
+                            this._translationSets[localeFile.lang] = translationSet;
                         }
                     });
                 } catch (e) {

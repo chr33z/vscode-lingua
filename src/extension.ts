@@ -79,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (activeEditor) {
         updateTranslationSets(settings, translationSets).then(() => {
             if (activeEditor) {
-                updateTranslationDecorations(activeEditor, translationSets.default);
+                updateTranslationDecorations(activeEditor, settings, translationSets.default);
             }
         });
     }
@@ -89,7 +89,7 @@ export async function activate(context: vscode.ExtensionContext) {
             activeEditor = editor;
             updateTranslationSets(settings, translationSets).then(() => {
                 if (activeEditor) {
-                    updateTranslationDecorations(activeEditor, translationSets.default);
+                    updateTranslationDecorations(activeEditor, settings, translationSets.default);
                 }
             });
         },
@@ -102,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (activeEditor && event.document === activeEditor.document) {
                 updateTranslationSets(settings, translationSets).then(() => {
                     if (activeEditor) {
-                        updateTranslationDecorations(activeEditor, translationSets.default);
+                        updateTranslationDecorations(activeEditor, settings, translationSets.default);
                     }
                 });
             }
@@ -156,7 +156,9 @@ async function writeSettings(settings: LinguaSettings, key: string, value: any) 
         try {
             const uri = Uri.file(`${workspace.rootPath}/.lingua`);
             workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
-            window.showInformationMessage('Lingua: Created a .lingua settings file in your workspace directory');
+            window.showInformationMessage(
+                'Lingua: Created/Updated the .lingua settings file in your workspace directory'
+            );
         } catch (e) {
             window.showErrorMessage(e);
         }
