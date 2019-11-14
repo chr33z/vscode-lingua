@@ -35,16 +35,17 @@ export function updateTranslationDecorations(
     if (!editor || !translationSet) {
         return;
     }
-    const regEx = /'[a-zA-Z\.\_]+'/gm;
+    const regEx = /['|"|`]([a-zA-Z0-9\.\_\-]+)\.?.*['|"|`]/gm;
     const text = editor.document.getText();
     const translationDecorations: DecorationOptions[] = [];
     const identifierDecorations: DecorationOptions[] = [];
 
     let match;
     while ((match = regEx.exec(text))) {
-        const path = match[0].replace(/['|"']/g, '');
-        const translation = translationSet.hasTranslation(path);
+        let path = match[0].replace(/['|"|`]/g, '').trim();
+        path = path.split('.').join('.');
 
+        const translation = translationSet.hasTranslation(path);
         const startPos = editor.document.positionAt(match.index);
         const endPos = editor.document.positionAt(match.index + match[0].length);
 
@@ -54,7 +55,7 @@ export function updateTranslationDecorations(
                 hoverMessage: translation,
             };
             translationDecorations.push(decoration);
-        } else if (settings.showPotentialTranslationIdentifieres) {
+        } else if (settings.showPotentialIdentifieres) {
             const decoration = {
                 range: new Range(startPos, endPos),
             };

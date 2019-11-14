@@ -1,21 +1,24 @@
 import * as vscode from 'vscode';
 import { workspace, languages, Disposable, window, Uri, TextDocument } from 'vscode';
-import TranslationReportProvider from './translation/translation-report-provider';
 import { TranslationSets } from './translation/translation-sets';
 import { locateTranslation } from './translation/translation-locator';
 import { LinguaSettings } from './lingua-settings';
 import { createTranslation } from './translation/translation-creator';
 import { updateTranslationDecorations } from './decoration';
 import { readSettings, writeSettings } from './lingua-settings';
+import AnalysisReportProvider from './analysis/analysis-report-provider';
 
 export async function activate(context: vscode.ExtensionContext) {
     const settings = await readSettings();
     let translationSets = new TranslationSets();
 
-    const provider = new TranslationReportProvider(settings, translationSets);
+    /*
+        Register document provider for translation analysis
+    */
+    const provider = new AnalysisReportProvider(settings, translationSets);
     const providerRegistrations = Disposable.from(
-        workspace.registerTextDocumentContentProvider(TranslationReportProvider.scheme, provider),
-        languages.registerDocumentLinkProvider({ scheme: TranslationReportProvider.scheme }, provider)
+        workspace.registerTextDocumentContentProvider(AnalysisReportProvider.scheme, provider),
+        languages.registerDocumentLinkProvider({ scheme: AnalysisReportProvider.scheme }, provider)
     );
     context.subscriptions.push(provider, providerRegistrations);
 
@@ -25,9 +28,15 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('lingua.analyse', async () => {
             updateTranslationSets(settings, translationSets).then(async () => {
-                const uri = Uri.parse('lingua:report');
-                const doc = await workspace.openTextDocument(uri);
-                return await window.showTextDocument(doc);
+                // Analyse translation usage
+
+                const uriUsed = Uri.parse('lingua:report-used');
+                const docUsed = await workspace.openTextDocument(uriUsed);
+                await window.showTextDocument(docUsed);
+
+                const uriUnused = Uri.parse('lingua:report-missing');
+                const docUnused = await workspace.openTextDocument(uriUnused);
+                return await window.showTextDocument(docUnused);
             });
         })
     );
