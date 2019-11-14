@@ -12,7 +12,7 @@ export class LinguaSettings {
         analysisFiles: ['ts', 'html'],
         translationFiles: [],
         defaultLang: 'de',
-        showPotentialTranslationIdentifieres: true,
+        showPotentialIdentifieres: true,
     };
 
     /**
@@ -34,7 +34,7 @@ export class LinguaSettings {
      * If true the decorator will underline potential translation identifiers
      * that have no translation yet
      */
-    public showPotentialTranslationIdentifieres: boolean = false;
+    public showPotentialIdentifieres: boolean = false;
 }
 
 export async function readSettings(): Promise<LinguaSettings> {
@@ -44,11 +44,6 @@ export async function readSettings(): Promise<LinguaSettings> {
         try {
             const doc = await workspace.openTextDocument(linguaSettingsUrl);
             const settings = assign(LinguaSettings.Default, JSON.parse(doc.getText()));
-
-            if (!settings.hasOwnProperty['scanFiles']) {
-                console.log("[Lingua] [Settings] Adding default scan files '['ts', 'html']'");
-                settings.scanFiles = ['ts', 'html'];
-            }
             return Promise.resolve(settings);
         } catch (e) {
             console.warn(e);

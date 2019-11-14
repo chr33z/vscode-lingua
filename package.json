@@ -44,7 +44,8 @@
                 },
                 {
                     "command": "lingua.selectLocaleFile",
-                    "group": "lingua"
+                    "group": "lingua",
+                    "when": "resourceExtname == .json"
                 },
                 {
                     "command": "lingua.createTranslation",
