@@ -77,17 +77,21 @@ export async function activate(context: vscode.ExtensionContext) {
     let activeEditor = vscode.window.activeTextEditor;
 
     if (activeEditor) {
-        await updateTranslationSets(settings, translationSets);
-        updateTranslationDecorations(activeEditor, translationSets.default);
+        updateTranslationSets(settings, translationSets).then(() => {
+            if (activeEditor) {
+                updateTranslationDecorations(activeEditor, translationSets.default);
+            }
+        });
     }
 
     vscode.window.onDidChangeActiveTextEditor(
         async editor => {
             activeEditor = editor;
-            if (editor) {
-                await updateTranslationSets(settings, translationSets);
-                updateTranslationDecorations(editor, translationSets.default);
-            }
+            updateTranslationSets(settings, translationSets).then(() => {
+                if (activeEditor) {
+                    updateTranslationDecorations(activeEditor, translationSets.default);
+                }
+            });
         },
         null,
         context.subscriptions
@@ -96,8 +100,11 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeTextDocument(
         async event => {
             if (activeEditor && event.document === activeEditor.document) {
-                await updateTranslationSets(settings, translationSets);
-                updateTranslationDecorations(activeEditor, translationSets.default);
+                updateTranslationSets(settings, translationSets).then(() => {
+                    if (activeEditor) {
+                        updateTranslationDecorations(activeEditor, translationSets.default);
+                    }
+                });
             }
         },
         null,
@@ -132,7 +139,7 @@ async function readSettings(): Promise<LinguaSettings> {
             }
             return Promise.resolve(settings);
         } catch (e) {
-            console.error(e);
+            console.warn(e);
         }
     }
 
