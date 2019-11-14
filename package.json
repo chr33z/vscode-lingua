@@ -21,34 +21,34 @@
         "commands": [
             {
                 "command": "lingua.analyse",
-                "title": "Lingua - Analyse Ionic i18n string literals"
+                "title": "Lingua: Analyse translation usage"
             },
             {
                 "command": "lingua.gotoTranslation",
-                "title": "Lingua - Goto translation"
+                "title": "Lingua: Goto translation"
             },
             {
                 "command": "lingua.selectLocaleFile",
-                "title": "Lingua - Select current file as translation file"
+                "title": "Lingua: Select current file as translation file"
             },
             {
                 "command": "lingua.createTranslation",
-                "title": "Lingua - Create Translation"
+                "title": "Lingua: Create Translation"
             }
         ],
         "menus": {
             "editor/context": [
                 {
                     "command": "lingua.gotoTranslation",
-                    "group": "navigation@1.31"
+                    "group": "lingua"
                 },
                 {
                     "command": "lingua.selectLocaleFile",
-                    "group": "navigation@1.31"
+                    "group": "lingua"
                 },
                 {
                     "command": "lingua.createTranslation",
-                    "group": "navigation@1.31"
+                    "group": "lingua"
                 }
             ]
         }
