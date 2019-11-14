@@ -1,4 +1,8 @@
-import { Uri } from 'vscode';
+import { Uri, workspace, window } from 'vscode';
+import { assign } from 'lodash';
+
+var textEncoding = require('text-encoding');
+var TextEncoder = textEncoding.TextEncoder;
 
 export class LinguaSettings {
     /**
@@ -31,4 +35,44 @@ export class LinguaSettings {
      * that have no translation yet
      */
     public showPotentialTranslationIdentifieres: boolean = false;
+}
+
+export async function readSettings(): Promise<LinguaSettings> {
+    if (workspace.workspaceFolders) {
+        const linguaSettingsUrl = Uri.file(`${workspace.rootPath}/.lingua`);
+
+        try {
+            const doc = await workspace.openTextDocument(linguaSettingsUrl);
+            const settings = assign(LinguaSettings.Default, JSON.parse(doc.getText()));
+
+            if (!settings.hasOwnProperty['scanFiles']) {
+                console.log("[Lingua] [Settings] Adding default scan files '['ts', 'html']'");
+                settings.scanFiles = ['ts', 'html'];
+            }
+            return Promise.resolve(settings);
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+
+    console.log('[Lingua] [Settings] Loading default settings...');
+    return Promise.resolve(LinguaSettings.Default);
+}
+
+export async function writeSettings(settings: LinguaSettings, key: string, value: any) {
+    if (key in settings) {
+        (settings as any)[key] = value;
+    }
+
+    if (workspace.workspaceFolders) {
+        try {
+            const uri = Uri.file(`${workspace.rootPath}/.lingua`);
+            workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
+            window.showInformationMessage(
+                'Lingua: Created/Updated the .lingua settings file in your workspace directory'
+            );
+        } catch (e) {
+            window.showErrorMessage(e);
+        }
+    }
 }

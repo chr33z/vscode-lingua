@@ -3,13 +3,10 @@ import { workspace, languages, Disposable, window, Uri, TextDocument } from 'vsc
 import TranslationReportProvider from './translation/translation-report-provider';
 import { TranslationSets } from './translation/translation-sets';
 import { locateTranslation } from './translation/translation-locator';
-import { assign } from 'lodash';
 import { LinguaSettings } from './lingua-settings';
 import { createTranslation } from './translation/translation-creator';
 import { updateTranslationDecorations } from './decoration';
-
-var textEncoding = require('text-encoding');
-var TextEncoder = textEncoding.TextEncoder;
+import { readSettings, writeSettings } from './lingua-settings';
 
 export async function activate(context: vscode.ExtensionContext) {
     const settings = await readSettings();
@@ -46,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     /*
-        Set the currently opened file as the translation *.json
+        Set the currently opened file as a translation file
     */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async editor => {
@@ -63,6 +60,9 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    /*
+        Create a translation for the selected translation identifier
+    */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.createTranslation', async editor => {
             updateTranslationSets(settings, translationSets).then(() => {
@@ -114,6 +114,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {}
 
+/**
+ * Go to a existing translation or partial translation using a translation identifert
+ * @param settings
+ * @param translationSets
+ * @param document
+ * @param selection Either the whole selected identifier or a selection inside the identifier
+ */
 async function gotoTranslation(
     settings: LinguaSettings,
     translationSets: TranslationSets,
@@ -121,48 +128,11 @@ async function gotoTranslation(
     selection: vscode.Selection
 ) {
     updateTranslationSets(settings, translationSets).then(() => {
-        locateTranslation(translationSets.get['de'], document, selection);
+        const defaultTranslation = translationSets.default;
+        if (defaultTranslation) {
+            locateTranslation(defaultTranslation, document, selection);
+        }
     });
-}
-
-async function readSettings(): Promise<LinguaSettings> {
-    if (workspace.workspaceFolders) {
-        const linguaSettingsUrl = Uri.file(`${workspace.rootPath}/.lingua`);
-
-        try {
-            const doc = await workspace.openTextDocument(linguaSettingsUrl);
-            const settings = assign(LinguaSettings.Default, JSON.parse(doc.getText()));
-
-            if (!settings.hasOwnProperty['scanFiles']) {
-                console.log("[Lingua] [Settings] Adding default scan files '['ts', 'html']'");
-                settings.scanFiles = ['ts', 'html'];
-            }
-            return Promise.resolve(settings);
-        } catch (e) {
-            console.warn(e);
-        }
-    }
-
-    console.log('[Lingua] [Settings] Loading default settings...');
-    return Promise.resolve(LinguaSettings.Default);
-}
-
-async function writeSettings(settings: LinguaSettings, key: string, value: any) {
-    if (key in settings) {
-        (settings as any)[key] = value;
-    }
-
-    if (workspace.workspaceFolders) {
-        try {
-            const uri = Uri.file(`${workspace.rootPath}/.lingua`);
-            workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
-            window.showInformationMessage(
-                'Lingua: Created/Updated the .lingua settings file in your workspace directory'
-            );
-        } catch (e) {
-            window.showErrorMessage(e);
-        }
-    }
 }
 
 /**
