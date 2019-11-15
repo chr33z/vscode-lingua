@@ -4,18 +4,24 @@ import { posix } from 'path';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from './translation-match';
 import { TranslationSets } from './translation-sets';
+import { TranslationSet } from './translation-set';
 
 export class TranslationUsage {
-    private regex = new RegExp(/\'[a-zA-Z\.]+\'/g);
+    // private regex = new RegExp(/\'[a-zA-Z\.\_\-]+\'/g);
+    private regex = new RegExp(/['|"|`]([a-zA-Z0-9\.\_\-]+)(\.\$.*)*['|"|`]/g);
 
     public found: { [path: string]: TranslationEntry } = {};
-    public missing: { [path: string]: TranslationEntry } = {};
+    public missing: string[] = [];
     public totalFiles: Number = 0;
     public totalTranslations: { [locale: string]: Number } = {};
 
     public async analyse(fileTypes: string[], translationSets: TranslationSets) {
         console.log('\nAnalysing translation usage...');
         console.log('---------------------');
+
+        if (!translationSets.default) {
+            return Promise.reject();
+        }
 
         const uris = await this.findFiles(fileTypes);
 
@@ -29,57 +35,48 @@ export class TranslationUsage {
 
         /*
             Iterate over files and try to regex all candidates. Then match each
-            candiate with all translationSets (dictionaries so quite a fast lookup )
-
-            But: does only find complete strings and not partial ones
+            candiate with all translationSets
         */
-        let index = 1;
         for (const uri of uris) {
-            console.log(`Analysing file (${index}/${uris.length}): ${posix.basename(uri.path)}`);
-
             const fileContent = await workspace.fs.readFile(uri);
             var text = new TextDecoder('utf-8').decode(fileContent);
 
             this.anaylseDocumentUsage(uri, text, translationSets);
-            index++;
         }
 
-        let translationKeys = translationSets.get['de'].keys;
-        let entryKeys = Object.keys(this.found);
+        let foundKeys = Object.keys(this.found).sort();
+        let allIdentifiers = translationSets.default.keys.sort();
 
-        translationKeys = translationKeys.filter(function(el) {
-            return entryKeys.indexOf(el) < 0;
-        });
+        this.filterMissing(allIdentifiers);
 
-        console.log(`\nFOUND: ${entryKeys.length} translations`);
-        entryKeys.forEach(key => {
+        console.log(`\nFOUND: ${foundKeys.length} translations`);
+        foundKeys.forEach(key => {
             console.log(`FOUND: ${key}`);
         });
 
-        console.log(`\nMISSING: ${translationKeys.length} translations`);
-        translationKeys.forEach(key => {
-            console.log(`MISSING: ${key}`);
+        console.log(`\nMISSING: ${this.missing.length} translations`);
+        this.missing.forEach(identifier => {
+            console.log(`MISSING: ${identifier}`);
         });
 
         return Promise.resolve(this);
     }
 
     public anaylseDocumentUsage(uri: Uri, text: string, translationSets: TranslationSets) {
-        const lines = text.split('\n');
-
-        let lineNumber = 1;
-        for (const line of lines) {
-            const matches = this.regex.exec(line);
-
-            if (matches) {
-                this.processSearchResults(matches, uri, lineNumber, translationSets);
+        let match;
+        while ((match = this.regex.exec(text))) {
+            if (match) {
+                this.processSearchResults(match, uri, 0, translationSets);
             }
-            lineNumber++;
         }
     }
 
     private processSearchResults(matches: RegExpMatchArray, uri: Uri, line: Number, translationSets: TranslationSets) {
         matches.forEach(match => {
+            if (!match || match.startsWith("'") || match.startsWith('"') || match.startsWith('`')) {
+                return;
+            }
+            console.log(match);
             const path = this.preparePath(match);
 
             Object.keys(translationSets.get).forEach(locale => {
@@ -123,7 +120,7 @@ export class TranslationUsage {
 
     private preparePath(path: string) {
         path = path.trim();
-        path = path.replace(/'/g, '');
+        path = path.replace(/['|"|`]/g, '');
         if (path.endsWith('.')) {
             path = path.slice(0, path.length - 1);
         }
@@ -132,7 +129,36 @@ export class TranslationUsage {
 
     private findFiles(includeExt: string[]) {
         const searchPattern = `**/src/**/*.{${includeExt.reduce((i, j) => i + ',' + j)}}`;
+        // const searchPattern = `**/src/**/dashboard.page.html`;
         const excludePattern = `**/node_modules/**`;
         return workspace.findFiles(searchPattern, excludePattern);
+    }
+
+    /**
+     * Create a list of missing translations by filtering the found identifiers
+     * with the partial matches
+     */
+    private filterMissing(keys: string[]) {
+        keys.forEach(key => {
+            let identifier = key;
+
+            while (identifier) {
+                if (this.found[identifier]) {
+                    // if the key is found, return
+                    return;
+                } else {
+                    // else reduce the identifier and try again
+                    const segments = identifier.split('.');
+                    if (segments.length > 1) {
+                        identifier = segments.slice(0, segments.length - 1).join('.');
+                    } else {
+                        // cannot reduce the path anymore, identifier is not found
+                        break;
+                    }
+                }
+            }
+
+            this.missing.push(key);
+        });
     }
 }

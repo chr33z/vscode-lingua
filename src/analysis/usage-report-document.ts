@@ -1,27 +1,16 @@
 import * as vscode from 'vscode';
-import { TranslationUsage } from './translation-usage';
-import { TranslationEntry } from './translation-entry';
-import { TranslationMatch } from './translation-match';
+import { TranslationUsage } from '../translation/translation-usage';
+import { TranslationMatch } from '../translation/translation-match';
 
-export default class TranslationReportDocument {
-    private readonly _uri: vscode.Uri;
-    private readonly _emitter: vscode.EventEmitter<vscode.Uri>;
+export default class UsageReportDocument {
     private readonly _translationUsage: TranslationUsage;
 
     private readonly _lines: string[];
-    private readonly _links: vscode.DocumentLink[];
 
-    constructor(uri: vscode.Uri, translationUsage: TranslationUsage, emitter: vscode.EventEmitter<vscode.Uri>) {
-        this._uri = uri;
+    constructor(uri: vscode.Uri, translationUsage: TranslationUsage) {
         this._translationUsage = translationUsage;
 
-        // The TranslationReportDocument has access to the event emitter from
-        // the containg provider. This allows it to signal changes
-        this._emitter = emitter;
-        this._links = [];
-
         // Start with printing a header and start resolving
-
         this._lines = [`Translation Usage Analysis`, `------------------------------------------------`];
         this._lines.push('Looking for direct matches of the translation path but also partial matches');
         this._lines.push('that might be a valida translation, but can only be determined at runtime.');
@@ -50,10 +39,6 @@ export default class TranslationReportDocument {
 
     get value() {
         return this._lines.join('\n');
-    }
-
-    get links() {
-        return this._links;
     }
 
     private populateMatches() {
