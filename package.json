@@ -14,7 +14,8 @@
         "onCommand:lingua.analyse",
         "onCommand:lingua.gotoTranslation",
         "onCommand:lingua.selectLocaleFile",
-        "onCommand:lingua.createTranslation"
+        "onCommand:lingua.createTranslation",
+        "onCommand:lingua.changeTranslation"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -29,11 +30,15 @@
             },
             {
                 "command": "lingua.selectLocaleFile",
-                "title": "Lingua: Select current file as translation file"
+                "title": "Lingua: Set file as language file"
             },
             {
                 "command": "lingua.createTranslation",
                 "title": "Lingua: Create Translation"
+            },
+            {
+                "command": "lingua.changeTranslation",
+                "title": "Lingua: Change Translation"
             }
         ],
         "menus": {
@@ -49,6 +54,10 @@
                 },
                 {
                     "command": "lingua.createTranslation",
+                    "group": "lingua"
+                },
+                {
+                    "command": "lingua.changeTranslation",
                     "group": "lingua"
                 }
             ]

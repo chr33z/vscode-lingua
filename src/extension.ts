@@ -2,9 +2,8 @@ import * as vscode from 'vscode';
 import { workspace, languages, Disposable, window, Uri, TextDocument } from 'vscode';
 import TranslationReportProvider from './translation/translation-report-provider';
 import { TranslationSets } from './translation/translation-sets';
-import { locateTranslation } from './translation/translation-locator';
 import { LinguaSettings } from './lingua-settings';
-import { createTranslation } from './translation/translation-creator';
+import { createTranslation, locateTranslation, changeTranslation } from './translation/translation-utils';
 import { updateTranslationDecorations } from './decoration';
 import { readSettings, writeSettings } from './lingua-settings';
 
@@ -68,6 +67,17 @@ export async function activate(context: vscode.ExtensionContext) {
             updateTranslationSets(settings, translationSets).then(() => {
                 const selection: vscode.Selection = editor.selection;
                 createTranslation(translationSets, editor.document, selection).then(() => {
+                    gotoTranslation(settings, translationSets, editor.document, editor.selection);
+                });
+            });
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async editor => {
+            updateTranslationSets(settings, translationSets).then(() => {
+                const selection: vscode.Selection = editor.selection;
+                changeTranslation(translationSets, editor.document, selection).then(() => {
                     gotoTranslation(settings, translationSets, editor.document, editor.selection);
                 });
             });
