@@ -23,27 +23,33 @@ export async function createTranslation(
         return;
     }
 
-    // promt user for locale
-    const locale = await window.showQuickPick(Object.keys(translationSets.get));
+    // Promt user for language if multiple are defined otherwise take default
+    let translationSet = translationSets.default;
+    if (Object.keys(translationSets.get).length > 1) {
+        const language = await window.showQuickPick(Object.keys(translationSets.get));
+        if (language) {
+            translationSet = translationSets.get[language];
+        }
+    }
 
-    if (locale) {
-        if (translationSets.get[locale].hasTranslation(identifier)) {
+    if (translationSet) {
+        if (translationSet.hasTranslation(identifier)) {
             window.showInformationMessage('Lingua: There is already a translation with this path.');
-            locateTranslation(translationSets.get[locale], document, selection);
+            locateTranslation(translationSet, document, selection);
         } else {
             const translation = await window.showInputBox({ placeHolder: 'Enter translation...' });
 
             if (translation) {
-                await workspace.openTextDocument(translationSets.get[locale].uri).then(async doc => {
+                await workspace.openTextDocument(translationSet.uri).then(async doc => {
                     const json = JSON.parse(doc.getText());
 
                     // add translation to json
-                    if (addTranslation(json, identifier, translation)) {
+                    if (addTranslation(json, identifier, translation) && translationSet) {
                         // write altered translation json back to file
 
                         const edit = new WorkspaceEdit();
                         edit.replace(
-                            translationSets.get[locale].uri,
+                            translationSet.uri,
                             new Range(0, 0, Number.MAX_VALUE, 0),
                             JSON.stringify(json, null, 2)
                         );
@@ -57,7 +63,10 @@ export async function createTranslation(
                             `Lingua: The path ${identifier} already exists! Cannot create translation.`,
                             { modal: true }
                         );
-                        locateTranslation(translationSets.get[locale], document, selection);
+
+                        if (translationSet) {
+                            locateTranslation(translationSet, document, selection);
+                        }
                     }
                 });
             }
@@ -156,9 +165,9 @@ function getIdentifierFromSelection(
     let range = selectTranslationPath(document, selection);
 
     let identifier = document.getText(range);
-    identifier = identifier.trim().replace(/['|"]/g, ''); // TODO: add backticks
+    identifier = identifier.trim().replace(/['|"|`]/g, '');
 
-    if (!identifier.match(/^[a-zA-Z\.\_\-]+$/)) {
+    if (!identifier.match(/^[a-zA-Z0-9\.\_\-]+$/)) {
         return { value: identifier, isIdentifier: false };
     } else {
         return { value: identifier, isIdentifier: true };
