@@ -11,8 +11,8 @@ export class LinguaSettings {
     public static Default: LinguaSettings = {
         analysisFiles: ['ts', 'html'],
         translationFiles: [],
-        defaultLang: 'de',
-        showPotentialIdentifieres: true,
+        defaultLang: '',
+        showPotentialIdentifieres: false,
     };
 
     /**

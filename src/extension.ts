@@ -57,13 +57,17 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async editor => {
             const localeUri = editor.document.uri;
 
-            const locale = await window.showInputBox({
-                placeHolder: "Enter the language locale if this file (e.g. 'de' or 'en')",
+            const language = await window.showInputBox({
+                placeHolder: "Enter the language identifier of this file (e.g. 'de' or 'en')",
             });
-            if (locale) {
+            if (language) {
                 // TODO: fix this uri madness
                 const uri = workspace.asRelativePath(localeUri.path);
-                writeSettings(settings, 'translationFiles', [{ lang: locale, uri: uri }]);
+                writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
+
+                if (!settings.defaultLang) {
+                    writeSettings(settings, 'defaultLang', language);
+                }
             }
         })
     );
