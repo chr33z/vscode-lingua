@@ -63,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (locale) {
                 // TODO: fix this uri madness
                 const uri = workspace.asRelativePath(localeUri.path);
-                writeSettings(settings, 'translationFiles', [{ locale: locale, uri: uri }]);
+                writeSettings(settings, 'translationFiles', [{ lang: locale, uri: uri }]);
             }
         })
     );
