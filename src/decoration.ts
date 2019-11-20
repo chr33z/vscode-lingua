@@ -35,7 +35,7 @@ export function updateTranslationDecorations(
     if (!editor || !translationSet) {
         return;
     }
-    const regEx = /['|"|`]([a-zA-Z0-9\.\_\-]+)\.?.*['|"|`]/gm;
+    const regEx = /['|"|`]([a-zA-Z0-9\.\_\-]+)['|"|`]/gm;
     const text = editor.document.getText();
     const translationDecorations: DecorationOptions[] = [];
     const identifierDecorations: DecorationOptions[] = [];
