@@ -1,7 +1,8 @@
 {
-    "name": "lingua",
-    "displayName": "lingua",
-    "description": "",
+    "name": "lingua-vscode",
+    "displayName": "Lingua for vscode",
+    "description": "An extension for managing translations created with ngx-translate",
+    "publisher": "chr33z",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.39.0"
