@@ -35,14 +35,14 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         if (uri.path === AnalysisReportProvider.usageSchemePath) {
             return new TranslationUsage()
-                .analyse(this._linguaSettings.analysisFiles, this._translationSets)
+                .analyse(this._linguaSettings.analysisExtensions, this._translationSets)
                 .then(translationUsage => {
                     let document = new UsageReportDocument(uri, translationUsage);
                     return document.value;
                 });
         } else if (uri.path === AnalysisReportProvider.missingSchemePath) {
             return new TranslationUsage()
-                .analyse(this._linguaSettings.analysisFiles, this._translationSets)
+                .analyse(this._linguaSettings.analysisExtensions, this._translationSets)
                 .then(translationUsage => {
                     let document = new MissingReportDocument(uri, translationUsage);
                     return document.value;
