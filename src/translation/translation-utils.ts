@@ -1,12 +1,9 @@
 import { TranslationSets } from './translation-sets';
-import { TextDocument, Selection, window, Range, Position, workspace, WorkspaceEdit } from 'vscode';
+import { TextDocument, Selection, window, Range, Position, workspace, WorkspaceEdit, TextEditor, Uri } from 'vscode';
 import { TranslationSet } from './translation-set';
 import { posix } from 'path';
 
 const jsonSourceMap = require('json-source-map');
-
-var textEncoding = require('text-encoding');
-var TextEncoder = textEncoding.TextEncoder;
 
 export async function createTranslation(
     translationSets: TranslationSets,
@@ -23,53 +20,31 @@ export async function createTranslation(
         return;
     }
 
-    // Promt user for language if multiple are defined otherwise take default
-    let translationSet = translationSets.default;
-    if (Object.keys(translationSets.get).length > 1) {
-        const language = await window.showQuickPick(Object.keys(translationSets.get));
-        if (language) {
-            translationSet = translationSets.get[language];
-        }
+    let translationSet = await promtTranslationSet(translationSets);
+
+    if (translationSet.isEmpty()) {
+        console.warn('[Lingua] No translation set defined');
+        return;
     }
 
-    if (translationSet) {
-        if (translationSet.hasTranslation(identifier)) {
-            window.showInformationMessage('Lingua: There is already a translation with this path.');
-            locateTranslation(translationSet, document, selection);
-        } else {
-            const translation = await window.showInputBox({ placeHolder: 'Enter translation...' });
+    if (translationSet.hasTranslation(identifier)) {
+        window.showInformationMessage('Lingua: There is already a translation with this path.');
+    } else {
+        const translation = await window.showInputBox({ placeHolder: 'Enter translation...' });
 
-            if (translation) {
-                await workspace.openTextDocument(translationSet.uri).then(async doc => {
-                    const json = JSON.parse(doc.getText());
-
-                    // add translation to json
-                    if (addTranslation(json, identifier, translation) && translationSet) {
-                        // write altered translation json back to file
-
-                        const edit = new WorkspaceEdit();
-                        edit.replace(
-                            translationSet.uri,
-                            new Range(0, 0, Number.MAX_VALUE, 0),
-                            JSON.stringify(json, null, 2)
-                        );
-                        await workspace.applyEdit(edit);
-
-                        window.showInformationMessage(`Lingua: Created translation at ${identifier}`);
-
-                        return Promise.resolve();
-                    } else {
-                        window.showWarningMessage(
-                            `Lingua: The path ${identifier} already exists! Cannot create translation.`,
-                            { modal: true }
-                        );
-
-                        if (translationSet) {
-                            locateTranslation(translationSet, document, selection);
-                        }
-                    }
+        if (translation) {
+            await updateTranslationFile(translationSet.uri, identifier, translation, true)
+                .then(_ => {
+                    window.showInformationMessage(`Lingua: Created translation at ${identifier}`);
+                    return Promise.resolve();
+                })
+                .catch(_ => {
+                    window.showWarningMessage(
+                        `Lingua: The path ${identifier} already exists! Cannot create translation.`,
+                        { modal: true }
+                    );
+                    return Promise.reject();
                 });
-            }
         }
     }
 }
@@ -79,6 +54,11 @@ export async function locateTranslation(translationSet: TranslationSet, document
     const identifierResult = getIdentifierFromSelection(document, selection);
     const isIdentifier = identifierResult.isIdentifier;
     const identifier = identifierResult.value;
+
+    if (translationSet.isEmpty()) {
+        console.warn('[Lingua] No translation set defined');
+        return;
+    }
 
     if (!isIdentifier) {
         window.showWarningMessage(`Lingua: '${identifier}' is not valid translation path`);
@@ -118,20 +98,14 @@ export async function changeTranslation(
     const identifier = identifierResult.value;
 
     if (!isIdentifier) {
-        window.showWarningMessage(`Lingua: '${identifier}' is not valid translation path`);
+        window.showWarningMessage(`Lingua: '${identifier}' is not valid translation identifier`);
         return;
     }
 
-    // Promt user for language if multiple are defined otherwise take default
-    let translationSet = translationSets.default;
-    if (Object.keys(translationSets.get).length > 1) {
-        const language = await window.showQuickPick(Object.keys(translationSets.get));
-        if (language) {
-            translationSet = translationSets.get[language];
-        }
-    }
+    let translationSet = await promtTranslationSet(translationSets);
 
-    if (!translationSet) {
+    if (translationSet.isEmpty()) {
+        console.warn('[Lingua] No translation set defined');
         return;
     }
 
@@ -139,23 +113,76 @@ export async function changeTranslation(
     const newTranslation = await window.showInputBox({ placeHolder: 'Enter new translation...' });
 
     if (newTranslation) {
-        await workspace.openTextDocument(translationSet.uri).then(async doc => {
-            const json = JSON.parse(doc.getText());
-
-            // overwrite translation in json
-            if (addTranslation(json, identifier, newTranslation, true) && translationSet) {
-                // write altered translation json back to file
-
-                const edit = new WorkspaceEdit();
-                edit.replace(translationSet.uri, new Range(0, 0, Number.MAX_VALUE, 0), JSON.stringify(json, null, 2));
-                await workspace.applyEdit(edit);
-
+        await updateTranslationFile(translationSet.uri, identifier, newTranslation, true)
+            .then(_ => {
                 window.showInformationMessage(`Lingua: Changed translation for ${identifier}`);
-
                 return Promise.resolve();
-            }
-        });
+            })
+            .catch(_ => {
+                window.showWarningMessage(`Lingua: Error changing translation for ${identifier}`);
+                return Promise.reject();
+            });
     }
+}
+
+export async function convertToTranslation(translationSets: TranslationSets, editor: TextEditor) {
+    const text = editor.document.getText(editor.selection);
+
+    let translationSet = await promtTranslationSet(translationSets);
+
+    if (translationSet.isEmpty()) {
+        console.warn('[Lingua] No translation set defined');
+        return;
+    }
+
+    if (translationSet.hasTranslation(text) || translationSet.isPartialMatch(text)) {
+        window.showWarningMessage(
+            `Lingua: "${truncateText(text, 20)}" already is a translation identifier. Cannot create translation.`
+        );
+        return;
+    }
+
+    const translationIdentifer = await window.showInputBox({ placeHolder: 'Enter a translation identifier...' });
+
+    if (translationIdentifer) {
+        if (isIdentifier(translationIdentifer)) {
+            // add new translation to translation file
+            await updateTranslationFile(translationSet.uri, translationIdentifer, text)
+                .then(async _ => {
+                    window.showInformationMessage(`Lingua: Added translation for ${truncateText(text, 20)}`);
+
+                    // replace source selection with translation construct
+                    const edit = new WorkspaceEdit();
+                    edit.replace(editor.document.uri, editor.selection, `{{ '${translationIdentifer}' | translate }`);
+                    await workspace.applyEdit(edit);
+
+                    return Promise.resolve();
+                })
+                .catch(_ => {
+                    window.showWarningMessage(`Lingua: Error adding translation for ${truncateText(text, 20)}`);
+                });
+        } else {
+            window.showWarningMessage(
+                `Lingua: "${truncateText(
+                    translationIdentifer,
+                    20
+                )}" is not formatted as a translation identifier. Cannot create translation.`
+            );
+        }
+    }
+}
+
+//#region Utility functions
+
+async function promtTranslationSet(translationSets: TranslationSets): Promise<TranslationSet> {
+    let translationSet = translationSets.default;
+    if (Object.keys(translationSets.get).length > 1) {
+        const language = await window.showQuickPick(Object.keys(translationSets.get));
+        if (language) {
+            translationSet = translationSets.get[language];
+        }
+    }
+    return Promise.resolve(translationSet);
 }
 
 function getIdentifierFromSelection(
@@ -167,14 +194,44 @@ function getIdentifierFromSelection(
     let identifier = document.getText(range);
     identifier = identifier.trim().replace(/['|"|`]/g, '');
 
-    if (!identifier.match(/^[a-zA-Z0-9\.\_\-]+$/)) {
+    if (!isIdentifier(identifier)) {
         return { value: identifier, isIdentifier: false };
     } else {
         return { value: identifier, isIdentifier: true };
     }
 }
 
-function selectTranslationPath(document: TextDocument, selection: Selection) {
+/**
+ * Extract text that is enclosed by quotation marks
+ * @param document
+ * @param selection
+ */
+function getTextFromSelection(document: TextDocument, selection: Selection): string {
+    // get the selected line
+    const line = document.getText(
+        new Range(new Position(selection.start.line, 0), new Position(selection.start.line + 1, 0))
+    );
+
+    // search start
+    let start = selection.start.character;
+    let currentChar = line[start];
+    while (start > 0 && currentChar !== "'" && currentChar !== '"') {
+        currentChar = line[--start];
+    }
+    start++;
+
+    // search end
+    let end = selection.start.character;
+    currentChar = line[end];
+    while (end < line.length - 1 && currentChar !== "'" && currentChar !== '"') {
+        currentChar = line[++end];
+    }
+
+    const range = new Range(new Position(selection.start.line, start), new Position(selection.start.line, end));
+    return document.getText(range);
+}
+
+function selectTranslationPath(document: TextDocument, selection: Selection): Range {
     // get the selected line
     const line = document.getText(
         new Range(new Position(selection.start.line, 0), new Position(selection.start.line + 1, 0))
@@ -227,3 +284,30 @@ function addTranslation(json: any, path: string, translation: string, overwrite:
         return true;
     }
 }
+
+async function updateTranslationFile(uri: Uri, identifier: string, translation: string, overwrite: boolean = false) {
+    workspace.openTextDocument(uri).then(async doc => {
+        const json = JSON.parse(doc.getText());
+
+        if (addTranslation(json, identifier, translation, overwrite)) {
+            const edit = new WorkspaceEdit();
+            edit.replace(uri, new Range(0, 0, Number.MAX_VALUE, 0), JSON.stringify(json, null, 2));
+            await workspace.applyEdit(edit);
+
+            window.showInformationMessage(`Lingua: Added translation for ${truncateText(translation, 20)}`);
+            return Promise.resolve();
+        } else {
+            return Promise.reject();
+        }
+    });
+}
+
+function isIdentifier(text: string): boolean {
+    return !!text.match(/^[a-zA-Z0-9\.\_\-]+$/);
+}
+
+function truncateText(text: string, length: number) {
+    return text.length > length ? text.substr(0, length - 1) + '...' : text;
+}
+
+//#endregion

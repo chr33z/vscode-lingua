@@ -5,7 +5,7 @@ import { LinguaSettings } from '../lingua-settings';
 export class TranslationSets {
     private _translationSets: { [locale: string]: TranslationSet } = {};
 
-    private _settings: LinguaSettings | null = null;
+    private _settings: LinguaSettings = new LinguaSettings();
 
     public uris: { [locale: string]: Uri } = {};
 
@@ -20,12 +20,12 @@ export class TranslationSets {
      * Return either the default translation set if defined, otherwise try to return the
      * first one.
      */
-    public get default(): TranslationSet | null {
+    public get default(): TranslationSet {
         if (!this._settings || Object.keys(this._translationSets).length === 0) {
-            return null;
+            return new TranslationSet();
         }
-        const defaultLocale = this._settings.defaultLang
-            ? this._settings.defaultLang
+        const defaultLocale = this._settings.defaultLanguage
+            ? this._settings.defaultLanguage
             : Object.keys(this._translationSets)[0];
         return this._translationSets[defaultLocale];
     }

@@ -16,7 +16,8 @@
         "onCommand:lingua.gotoTranslation",
         "onCommand:lingua.selectLocaleFile",
         "onCommand:lingua.createTranslation",
-        "onCommand:lingua.changeTranslation"
+        "onCommand:lingua.changeTranslation",
+        "onCommand:lingua.convertToTranslation"
     ],
     "main": "./dist/extension.js",
     "contributes": {
@@ -35,11 +36,15 @@
             },
             {
                 "command": "lingua.createTranslation",
-                "title": "Lingua: Create Translation"
+                "title": "Lingua: Create translation"
             },
             {
                 "command": "lingua.changeTranslation",
-                "title": "Lingua: Change Translation"
+                "title": "Lingua: Change translation"
+            },
+            {
+                "command": "lingua.convertToTranslation",
+                "title": "Lingua: Convert text to translation"
             }
         ],
         "menus": {
@@ -59,6 +64,10 @@
                 },
                 {
                     "command": "lingua.changeTranslation",
+                    "group": "lingua"
+                },
+                {
+                    "command": "lingua.convertToTranslation",
                     "group": "lingua"
                 }
             ]

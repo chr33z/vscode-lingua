@@ -2,7 +2,12 @@ import * as vscode from 'vscode';
 import { workspace, languages, Disposable, window, Uri, TextDocument } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
-import { createTranslation, locateTranslation, changeTranslation } from './translation/translation-utils';
+import {
+    createTranslation,
+    locateTranslation,
+    changeTranslation,
+    convertToTranslation,
+} from './translation/translation-utils';
 import { updateTranslationDecorations } from './decoration';
 import { readSettings, writeSettings } from './lingua-settings';
 import AnalysisReportProvider from './analysis/analysis-report-provider';
@@ -15,9 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
     settings = await readSettings();
     translationSets = new TranslationSets();
 
-    /*
-        Register document provider for translation analysis
-    */
+    /* Register document provider for translation analysis */
     const provider = new AnalysisReportProvider(settings, translationSets);
     const providerRegistrations = Disposable.from(
         workspace.registerTextDocumentContentProvider(AnalysisReportProvider.scheme, provider),
@@ -25,9 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(provider, providerRegistrations);
 
-    /*
-        Analyse translation usage across all files declared in .lingua
-    */
+    /* Analyse translation usage across all files declared in .lingua */
     context.subscriptions.push(
         vscode.commands.registerCommand('lingua.analyse', async () => {
             updateTranslationSets(settings, translationSets).then(async () => {
@@ -44,31 +45,26 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    /*
-        Go to a specific translation by selecting npthe translation path and select this command
-        with the contect menu
-    */
+    /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async editor => {
             gotoTranslation(settings, translationSets, editor.document, editor.selection);
         })
     );
 
-    /*
-        Set the currently opened file as a translation file
-    */
+    /* Set the currently opened file as a translation file */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async editor => {
-            const localeUri = editor.document.uri;
+            const languageFileUri = editor.document.uri;
 
             const language = await window.showInputBox({
-                placeHolder: "Enter the language identifier of this file (e.g. 'de' or 'en')",
+                placeHolder: "Enter a language identifier of this file (e.g. 'de' or 'en')",
             });
             if (language) {
                 // TODO: fix this uri madness
-                const uri = workspace.asRelativePath(localeUri.path);
-                writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
+                const uri = workspace.asRelativePath(languageFileUri.path);
 
+                writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
                 if (!settings.defaultLanguage) {
                     writeSettings(settings, 'defaultLanguage', language);
                 }
@@ -76,30 +72,34 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    /*
-        Create a translation for the selected translation identifier
-    */
+    /* Create a translation for the selected translation identifier */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.createTranslation', async editor => {
             updateTranslationSets(settings, translationSets).then(() => {
-                const selection: vscode.Selection = editor.selection;
-                createTranslation(translationSets, editor.document, selection).then(() => {
-                    gotoTranslation(settings, translationSets, editor.document, editor.selection);
-                });
+                createTranslation(translationSets, editor.document, editor.selection);
             });
         })
     );
 
+    /* Change a translation for the selected translation identifier */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async editor => {
             updateTranslationSets(settings, translationSets).then(() => {
-                const selection: vscode.Selection = editor.selection;
-                changeTranslation(translationSets, editor.document, selection).then(() => {
-                    gotoTranslation(settings, translationSets, editor.document, editor.selection);
-                });
+                changeTranslation(translationSets, editor.document, editor.selection);
             });
         })
     );
+
+    /* Convert a selected text to a translation file */
+    context.subscriptions.push(
+        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async editor => {
+            updateTranslationSets(settings, translationSets).then(() => {
+                convertToTranslation(translationSets, editor);
+            });
+        })
+    );
+
+    // Callbacks to control decoration and settings updates
 
     let activeEditor = vscode.window.activeTextEditor;
 
@@ -126,7 +126,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeTextDocument(
         async event => {
-            if (activeEditor && event.document === activeEditor.document) {
+            const translationSetUri = translationSets.default.uri;
+
+            // update either if content of current editor is changed or if content of
+            // default translation changes
+            if (
+                (activeEditor && event.document === activeEditor.document) ||
+                event.document.uri.path === translationSetUri.path
+            ) {
                 updateTranslationSets(settings, translationSets).then(() => {
                     if (activeEditor) {
                         updateTranslationDecorations(activeEditor, settings, translationSets.default);
