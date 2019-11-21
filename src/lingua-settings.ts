@@ -5,36 +5,27 @@ var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
 
 export class LinguaSettings {
-    /**
-     * Defaults for when there is no settings file yet
-     */
-    public static Default: LinguaSettings = {
-        analysisFiles: ['ts', 'html'],
-        translationFiles: [],
-        defaultLang: '',
-        showPotentialIdentifieres: false,
-    };
+    /** List if file extensions that are scanned for translation statistics */
+    public analysisExtensions: string[] = ['ts', 'html'];
 
-    /**
-     * List if file type endings that are scanned for translation statistics
-     */
-    public analysisFiles: string[] = [];
-
-    /**
-     * key-value pair of languages associated with their corresponding json file
-     */
+    /** key-value pair of languages associated with their corresponding json file */
     public translationFiles: { lang: string; uri: Uri }[] = [];
 
-    /**
-     * The current default language
-     */
-    public defaultLang: string = '';
+    /** The current default language */
+    public defaultLanguage: string = '';
 
-    /**
-     * If true the decorator will underline potential translation identifiers
-     * that have no translation yet
-     */
-    public showPotentialIdentifieres: boolean = false;
+    public decoration: DecorationSettings = new DecorationSettings();
+}
+
+export class DecorationSettings {
+    /** If true translations will be shown inline */
+    public showInlineTranslation = true;
+
+    /** The maximum characters after which a translation is truncated */
+    public maxTranslationLength = 20;
+
+    /** If true the decorator will underline potential translation identifiers */
+    public showPotentialIdentifieres = false;
 }
 
 export async function readSettings(): Promise<LinguaSettings> {
@@ -43,15 +34,15 @@ export async function readSettings(): Promise<LinguaSettings> {
 
         try {
             const doc = await workspace.openTextDocument(linguaSettingsUrl);
-            const settings = assign(LinguaSettings.Default, JSON.parse(doc.getText()));
+            const settings = assign(new LinguaSettings(), JSON.parse(doc.getText()));
             return Promise.resolve(settings);
         } catch (e) {
-            console.warn(e);
+            console.warn('Could not load .lingua settings file in root directory');
         }
     }
 
     console.log('[Lingua] [Settings] Loading default settings...');
-    return Promise.resolve(LinguaSettings.Default);
+    return Promise.resolve(new LinguaSettings());
 }
 
 export async function writeSettings(settings: LinguaSettings, key: string, value: any) {
