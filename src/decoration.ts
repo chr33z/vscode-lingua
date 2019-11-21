@@ -1,17 +1,9 @@
-import { TextEditor, DecorationOptions, Range, window, Position } from 'vscode';
+import { TextEditor, DecorationOptions, Range, window, Position, ThemeColor, extensions, workspace } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
 import { LinguaSettings } from './lingua-settings';
 
 const translationDecoration = window.createTextEditorDecorationType({
-    after: {
-        contentText: '',
-    },
-    light: {
-        textDecoration: 'underline #148f77',
-    },
-    dark: {
-        textDecoration: 'underline #117a65',
-    },
+    textDecoration: 'underline #494949',
 });
 
 const potentialIdentifierDecoration = window.createTextEditorDecorationType({
@@ -30,11 +22,12 @@ const potentialIdentifierDecoration = window.createTextEditorDecorationType({
 export function updateTranslationDecorations(
     editor: TextEditor,
     settings: LinguaSettings,
-    translationSet: TranslationSet | null
+    translationSet: TranslationSet
 ) {
-    if (!editor || !translationSet) {
+    if (!editor || translationSet.isEmpty()) {
         return;
     }
+
     const regEx = /['|"|`]([a-zA-Z0-9\.\_\-]+)['|"|`]/gm;
     const text = editor.document.getText();
     const translationDecorations: DecorationOptions[] = [];
@@ -90,7 +83,7 @@ function getDecoration(showInline: boolean, from: Position, to: Position, transl
             renderOptions: {
                 after: {
                     contentText: ' • ' + translation,
-                    color: '#494949',
+                    color: { id: 'lingua.lookupColor' },
                 },
             },
         };

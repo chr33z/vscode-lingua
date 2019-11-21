@@ -71,7 +71,18 @@
                     "group": "lingua"
                 }
             ]
-        }
+        },
+        "colors": [
+            {
+                "id": "lingua.lookupColor",
+                "description": "Color decoration for translation lookups",
+                "defaults": {
+                    "dark": "#1a8582",
+                    "light": "#146462",
+                    "highContrast": "#15c1bc"
+                }
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "webpack --mode production",
