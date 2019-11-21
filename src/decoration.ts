@@ -1,25 +1,25 @@
-import { TextEditor, DecorationOptions, Range, window, OverviewRulerLane, ThemeColor } from 'vscode';
+import { TextEditor, DecorationOptions, Range, window, Position } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
 import { LinguaSettings } from './lingua-settings';
 
 const translationDecoration = window.createTextEditorDecorationType({
-    borderRadius: '3px',
-    borderWidth: '1px',
-    borderStyle: 'dotted',
+    after: {
+        contentText: '',
+    },
     light: {
-        borderColor: '#001f3fFF',
+        textDecoration: 'underline #148f77',
     },
     dark: {
-        borderColor: '#0074D9FF',
+        textDecoration: 'underline #117a65',
     },
 });
 
 const potentialIdentifierDecoration = window.createTextEditorDecorationType({
     light: {
-        textDecoration: 'underline #FF851B',
+        textDecoration: 'underline #b7950b wavy',
     },
     dark: {
-        textDecoration: 'underline #FFDC00',
+        textDecoration: 'underline #b7950b wavy',
     },
 });
 
@@ -43,19 +43,34 @@ export function updateTranslationDecorations(
     let match;
     while ((match = regEx.exec(text))) {
         let path = match[0].replace(/['|"|`]/g, '').trim();
-        path = path.split('.').join('.');
+        path = path
+            .split('.')
+            .filter(seg => seg.length > 0)
+            .join('.');
 
         const translation = translationSet.hasTranslation(path);
-        const startPos = editor.document.positionAt(match.index);
-        const endPos = editor.document.positionAt(match.index + match[0].length);
+        const isPartialTranslation = translationSet.isPartialMatch(path);
+        const startPos = editor.document.positionAt(match.index + 1);
+        const endPos = editor.document.positionAt(match.index + match[0].length - 1);
+        const n = settings.decoration.maxTranslationLength;
 
         if (translation) {
-            const decoration = {
-                range: new Range(startPos, endPos),
-                hoverMessage: translation,
-            };
+            // Translation availble
+            const shortTranslation = translation.length > n ? translation.substr(0, n - 1) + '...' : translation;
+            const decoration = getDecoration(
+                settings.decoration.showInlineTranslation,
+                startPos,
+                endPos,
+                shortTranslation
+            );
             translationDecorations.push(decoration);
-        } else if (settings.showPotentialIdentifieres) {
+        } else if (isPartialTranslation) {
+            // Partial translation
+            const shortPath = path.length > n ? path.substr(0, n - 1) + '...' : path;
+            const decoration = getDecoration(false, startPos, endPos, 'Translations available: ' + shortPath + ' ...');
+            translationDecorations.push(decoration);
+        } else if (settings.decoration.showPotentialIdentifieres) {
+            // Possible identifer without translation
             const decoration = {
                 range: new Range(startPos, endPos),
             };
@@ -65,4 +80,24 @@ export function updateTranslationDecorations(
 
     editor.setDecorations(translationDecoration, translationDecorations);
     editor.setDecorations(potentialIdentifierDecoration, identifierDecorations);
+}
+
+function getDecoration(showInline: boolean, from: Position, to: Position, translation: string) {
+    if (showInline) {
+        return {
+            range: new Range(from, to),
+            hoverMessage: translation,
+            renderOptions: {
+                after: {
+                    contentText: ' • ' + translation,
+                    color: '#494949',
+                },
+            },
+        };
+    } else {
+        return {
+            range: new Range(from, to),
+            hoverMessage: translation,
+        };
+    }
 }

@@ -6,10 +6,14 @@ import { createTranslation, locateTranslation, changeTranslation } from './trans
 import { updateTranslationDecorations } from './decoration';
 import { readSettings, writeSettings } from './lingua-settings';
 import AnalysisReportProvider from './analysis/analysis-report-provider';
+import { posix } from 'path';
+
+let settings: LinguaSettings;
+let translationSets: TranslationSets;
 
 export async function activate(context: vscode.ExtensionContext) {
-    const settings = await readSettings();
-    let translationSets = new TranslationSets();
+    settings = await readSettings();
+    translationSets = new TranslationSets();
 
     /*
         Register document provider for translation analysis
@@ -65,8 +69,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 const uri = workspace.asRelativePath(localeUri.path);
                 writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
 
-                if (!settings.defaultLang) {
-                    writeSettings(settings, 'defaultLang', language);
+                if (!settings.defaultLanguage) {
+                    writeSettings(settings, 'defaultLanguage', language);
                 }
             }
         })
@@ -128,6 +132,16 @@ export async function activate(context: vscode.ExtensionContext) {
                         updateTranslationDecorations(activeEditor, settings, translationSets.default);
                     }
                 });
+            }
+        },
+        null,
+        context.subscriptions
+    );
+
+    vscode.workspace.onDidSaveTextDocument(
+        async event => {
+            if (posix.extname(event.fileName) === '.lingua') {
+                settings = await readSettings();
             }
         },
         null,
