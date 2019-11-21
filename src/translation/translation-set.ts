@@ -1,5 +1,5 @@
 import { isArray } from 'util';
-import { Uri, workspace } from 'vscode';
+import { Uri } from 'vscode';
 
 export class TranslationSet {
     private _mainTranslationSet: { [path: string]: string } = {};
@@ -21,6 +21,10 @@ export class TranslationSet {
 
     public isPartialMatch(path: string): boolean {
         return this._secondaryTranslationSet.has(path);
+    }
+
+    public isEmpty(): boolean {
+        return !!!this.keys.length; // KEYS!!! HOW LONG ARE YOU?!
     }
 
     public get keys(): string[] {
