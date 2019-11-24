@@ -24,7 +24,7 @@ export class TranslationSet {
     }
 
     public isEmpty(): boolean {
-        return !!!this.keys.length; // KEYS!!! HOW LONG ARE YOU?!
+        return !!!this._file;
     }
 
     public get keys(): string[] {

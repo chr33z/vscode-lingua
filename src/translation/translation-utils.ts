@@ -35,7 +35,6 @@ export async function createTranslation(
         if (translation) {
             await updateTranslationFile(translationSet.uri, identifier, translation, true)
                 .then(_ => {
-                    window.showInformationMessage(`Lingua: Created translation at ${identifier}`);
                     return Promise.resolve();
                 })
                 .catch(_ => {
@@ -115,7 +114,6 @@ export async function changeTranslation(
     if (newTranslation) {
         await updateTranslationFile(translationSet.uri, identifier, newTranslation, true)
             .then(_ => {
-                window.showInformationMessage(`Lingua: Changed translation for ${identifier}`);
                 return Promise.resolve();
             })
             .catch(_ => {
@@ -149,8 +147,6 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
             // add new translation to translation file
             await updateTranslationFile(translationSet.uri, translationIdentifer, text)
                 .then(async _ => {
-                    window.showInformationMessage(`Lingua: Added translation for ${truncateText(text, 20)}`);
-
                     // replace source selection with translation construct
                     const edit = new WorkspaceEdit();
                     edit.replace(editor.document.uri, editor.selection, `{{ '${translationIdentifer}' | translate }`);
