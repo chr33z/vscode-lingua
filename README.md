@@ -2,10 +2,6 @@
 
 Lingua - a Visual Studio Code extension to help managing translations for [ngx-translate](https://github.com/ngx-translate/core) - a internationalization (i18n) library for Angular.
 
-![Lingua creating translations. A demo video.](images/example_1.gif)
-
-![Lingua creating translations. A demo video.](images/example_2.gif)
-
 ## Goals:
 
 Lingua's goals is to help developers creating, and managing translations with ngx-translate, right in the editor. With Lingua you can:
@@ -16,6 +12,8 @@ Lingua's goals is to help developers creating, and managing translations with ng
 -   Analyse translation usage (e.g. how many translations, how many unused translations, ...)
 -   Delete unused translations
 
+![Lingua creating translations. A demo video.](images/example_1.gif)
+
 ## Usage:
 
 Lingua is automatically started when you work on an Angular project. But to use its features you first have to specify at least one language file (e.g. `en.json`, `de.json`, ...)
@@ -23,6 +21,8 @@ Lingua is automatically started when you work on an Angular project. But to use 
 This is done by opening the [language].json file in the editor and selecting right-click context menu "_Set as language file_". Enter the language identifier, which you want to use (e.g. `en`) in the quick promt field. Lingua automatically creates a `.lingua` settings file in the root of your project.
 
 > The first file you set as a language file will be your default language. This means mouse-over translations are generated from this language file. You can change the default in the settings with the `defaultLanguage` parameter
+
+![Lingua creating translations. A demo video.](images/example_2.gif)
 
 ### Creating new translations
 
