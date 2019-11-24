@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { workspace, languages, Disposable, window, Uri, TextDocument } from 'vscode';
+import { workspace, languages, Disposable, window, Uri, TextDocument, commands } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
 import {
@@ -17,6 +17,18 @@ let settings: LinguaSettings;
 let translationSets: TranslationSets;
 
 export async function activate(context: vscode.ExtensionContext) {
+    /*
+        vscode shows all registered commands per default, whether the extension has
+        loaded or not. Check if the project type is correct and enable/disable
+        the commands
+    */
+    if (await isNgxTranslateProject()) {
+        setExtensionEnabled(true);
+    } else {
+        setExtensionEnabled(false);
+        return;
+    }
+
     settings = await readSettings();
     translationSets = new TranslationSets();
 
@@ -158,6 +170,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {}
 
+function setExtensionEnabled(enabled: boolean) {
+    // https://github.com/Microsoft/vscode/issues/10401#issuecomment-280090759
+    commands.executeCommand('setContext', 'lingua:enabled', enabled);
+}
+
 /**
  * Go to a existing translation or partial translation using a translation identifert
  * @param settings
@@ -196,4 +213,13 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
         );
         return Promise.reject();
     }
+}
+
+/**
+ * Check if the current project is a angular project with ngx-translate module
+ */
+async function isNgxTranslateProject(): Promise<boolean> {
+    const isAngular = await workspace.findFiles('**/angular.json', `**/node_modules/**`);
+    const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/ngx-translate*');
+    return isAngular.length > 0 && hasNgxTranslateModule.length > 0;
 }

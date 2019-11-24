@@ -11,13 +11,7 @@
         "Other"
     ],
     "activationEvents": [
-        "*",
-        "onCommand:lingua.analyse",
-        "onCommand:lingua.gotoTranslation",
-        "onCommand:lingua.selectLocaleFile",
-        "onCommand:lingua.createTranslation",
-        "onCommand:lingua.changeTranslation",
-        "onCommand:lingua.convertToTranslation"
+        "*"
     ],
     "main": "./dist/extension.js",
     "contributes": {
@@ -51,24 +45,50 @@
             "editor/context": [
                 {
                     "command": "lingua.gotoTranslation",
-                    "group": "lingua"
+                    "group": "lingua",
+                    "when": "lingua:enabled"
                 },
                 {
                     "command": "lingua.selectLocaleFile",
                     "group": "lingua",
-                    "when": "resourceExtname == .json"
+                    "when": "resourceExtname == .json && lingua:enabled"
                 },
                 {
                     "command": "lingua.createTranslation",
-                    "group": "lingua"
+                    "group": "lingua",
+                    "when": "lingua:enabled"
                 },
                 {
                     "command": "lingua.changeTranslation",
-                    "group": "lingua"
+                    "group": "lingua",
+                    "when": "lingua:enabled"
                 },
                 {
                     "command": "lingua.convertToTranslation",
-                    "group": "lingua"
+                    "group": "lingua",
+                    "when": "lingua:enabled"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "lingua.gotoTranslation",
+                    "when": "lingua:enabled"
+                },
+                {
+                    "command": "lingua.selectLocaleFile",
+                    "when": "lingua:enabled"
+                },
+                {
+                    "command": "lingua.createTranslation",
+                    "when": "lingua:enabled"
+                },
+                {
+                    "command": "lingua.changeTranslation",
+                    "when": "lingua:enabled"
+                },
+                {
+                    "command": "lingua.convertToTranslation",
+                    "when": "lingua:enabled"
                 }
             ]
         },
