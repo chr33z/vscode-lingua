@@ -1,6 +1,7 @@
-import { TextEditor, DecorationOptions, Range, window, Position, ThemeColor, extensions, workspace } from 'vscode';
+import { TextEditor, DecorationOptions, Range, window, Position, ThemeColor, extensions, workspace, Uri } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
 import { LinguaSettings } from './lingua-settings';
+import { posix } from 'path';
 
 const translationDecoration = window.createTextEditorDecorationType({
     textDecoration: 'underline #494949',
@@ -24,6 +25,10 @@ export function updateTranslationDecorations(
     settings: LinguaSettings,
     translationSet: TranslationSet
 ) {
+    if (!canDecorateFile(editor.document.uri)) {
+        return;
+    }
+
     if (!editor || translationSet.isEmpty()) {
         return;
     }
@@ -93,4 +98,9 @@ function getDecoration(showInline: boolean, from: Position, to: Position, transl
             hoverMessage: translation,
         };
     }
+}
+
+function canDecorateFile(uri: Uri) {
+    const ext = posix.extname(uri.path);
+    return ext === '.ts' || ext === '.html';
 }

@@ -22,7 +22,7 @@ export class DecorationSettings {
     public showInlineTranslation = true;
 
     /** The maximum characters after which a translation is truncated */
-    public maxTranslationLength = 20;
+    public maxTranslationLength = 80;
 
     /** If true the decorator will underline potential translation identifiers */
     public showPotentialIdentifieres = false;
