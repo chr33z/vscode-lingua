@@ -18,6 +18,7 @@
     "categories": [
         "Other"
     ],
+    "icon": "images/icon.png",
     "keywords": [
         "angular",
         "ngx-translate",
