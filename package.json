@@ -1,14 +1,28 @@
 {
     "name": "lingua-vscode",
-    "displayName": "Lingua for vscode",
-    "description": "An extension for managing translations created with ngx-translate",
+    "displayName": "Lingua - Managing nxg-translations",
+    "description": "An extension for managing angular translations created with ngx-translate",
+    "author": {
+        "name": "Christopher Gebhardt",
+        "email": "chr33z@gmail.com"
+    },
     "publisher": "chr33z",
     "version": "0.4.0",
     "engines": {
         "vscode": "^1.39.0"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chr33z/vscode-lingua"
+    },
     "categories": [
         "Other"
+    ],
+    "keywords": [
+        "angular",
+        "ngx-translate",
+        "translation",
+        "translate"
     ],
     "activationEvents": [
         "*"
