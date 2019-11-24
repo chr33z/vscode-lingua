@@ -3,7 +3,7 @@
     "displayName": "Lingua for vscode",
     "description": "An extension for managing translations created with ngx-translate",
     "publisher": "chr33z",
-    "version": "0.3.1",
+    "version": "0.4.0",
     "engines": {
         "vscode": "^1.39.0"
     },
