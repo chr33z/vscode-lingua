@@ -117,7 +117,38 @@
                     "highContrast": "#15c1bc"
                 }
             }
-        ]
+        ],
+        "configuration": {
+            "title": "Lingua",
+            "properties": {
+                "lingua.defaultLanguage": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Identifier for the selected default language. (e.g. 'en', 'fr', ...)"
+                },
+                "lingua.analysisExtensions": {
+                    "type": "string",
+                    "default": "html, ts",
+                    "enum": [
+                        "html",
+                        "ts",
+                        "html, ts"
+                    ]
+                },
+                "lingua.decoration.maxLookupLength": {
+                    "type": "number",
+                    "default": 80,
+                    "maximum": 240,
+                    "minimum": 0,
+                    "description": "The maximum length of the inline translation."
+                },
+                "lingua.decoration.showInlineTranslation": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable the inline translation."
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "webpack --mode production",

@@ -1,10 +1,8 @@
 import { Uri, workspace } from 'vscode';
 import { TranslationEntry } from './translation-entry';
-import { posix } from 'path';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from './translation-match';
 import { TranslationSets } from './translation-sets';
-import { TranslationSet } from './translation-set';
 
 export class TranslationUsage {
     // private regex = new RegExp(/\'[a-zA-Z\.\_\-]+\'/g);

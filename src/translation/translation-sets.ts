@@ -24,9 +24,8 @@ export class TranslationSets {
         if (!this._settings || Object.keys(this._translationSets).length === 0) {
             return new TranslationSet();
         }
-        const defaultLocale = this._settings.defaultLanguage
-            ? this._settings.defaultLanguage
-            : Object.keys(this._translationSets)[0];
+        const defaultLanguage = workspace.getConfiguration('lingua').get<string>('defaultLanguage');
+        const defaultLocale = defaultLanguage ? defaultLanguage : Object.keys(this._translationSets)[0];
         return this._translationSets[defaultLocale];
     }
 
