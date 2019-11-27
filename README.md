@@ -33,7 +33,7 @@ Write an identifier in your code like `'some.identifier'` for which you want to 
 
 Change translations directly in your `html` or `ts` file by opening the context menu, selecting `Lingua: Change translation` and typing in a new translation for the current identifier.
 
-![Lingua autocomplete.](images/example_3.gif)
+![Lingua changeing translations](images/example_2.gif)
 
 ### Go to a translation in your default language file
 
