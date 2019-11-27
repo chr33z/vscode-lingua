@@ -4,7 +4,12 @@ import { LinguaSettings } from './lingua-settings';
 import { posix } from 'path';
 
 const translationDecoration = window.createTextEditorDecorationType({
-    textDecoration: 'underline #494949',
+    light: {
+        textDecoration: 'underline #146462',
+    },
+    dark: {
+        textDecoration: 'underline #1a8582',
+    },
 });
 
 const potentialIdentifierDecoration = window.createTextEditorDecorationType({
@@ -49,7 +54,7 @@ export function updateTranslationDecorations(
         const translation = translationSet.hasTranslation(path);
         const isPartialTranslation = translationSet.isPartialMatch(path);
         const startPos = editor.document.positionAt(match.index + 1);
-        const endPos = editor.document.positionAt(match.index + match[0].length - 1);
+        const endPos = editor.document.positionAt(match.index + match[0].length);
         const n = settings.decoration.maxTranslationLength;
 
         if (translation) {
