@@ -4,13 +4,14 @@ Lingua - a Visual Studio Code extension to help managing translations for [ngx-t
 
 ## Goals:
 
-Lingua's goals is to help developers creating, and managing translations with ngx-translate, right in the editor. With Lingua you can:
+Lingua's goals is to help developers creating, and managing translations with ngx-translate, directly in the editor. With Lingua you can:
 
--   Create translations from the context menu
--   Show the default translation of an identifier when hovering over it
--   Find a translation in your lang-file from an identifier
+-   Create translations directly in your `html` or `ts` file
+-   Change translation directly in your `html` or `ts` file
+-   Lookup the translations in your editor
+-   Autocomplete translation identifiers in `html`
 -   Analyse translation usage (e.g. how many translations, how many unused translations, ...)
--   Delete unused translations
+-   Find translations in your language-file
 
 ![Lingua creating translations. A demo video.](images/example_1.gif)
 
@@ -22,13 +23,17 @@ This is done by opening the [language].json file in the editor and selecting rig
 
 > The first file you set as a language file will be your default language. This means mouse-over translations are generated from this language file. You can change the default in the settings with the `defaultLanguage` parameter
 
-![Lingua creating translations. A demo video.](images/example_2.gif)
+![Lingua autocomplete.](images/example_3.gif)
 
 ### Creating new translations
 
 Write an identifier in your code like `'some.identifier'` for which you want to create a translation. Select or the identifier or place the cursor in it and open the context menu with right-click. Select `Lingua: Create translation`. You will be promted to enter a translation for this identifier, following with a promt to select the language for which you want to create this translation for.
 
 ### Changing translations
+
+Change translations directly in your `html` or `ts` file by opening the context menu, selecting `Lingua: Change translation` and typing in a new translation for the current identifier.
+
+![Lingua autocomplete.](images/example_3.gif)
 
 ### Go to a translation in your default language file
 
@@ -46,31 +51,10 @@ Hit `Ctrl+P` and enter the command `Lingua: analyse translation usage` to calcul
 
 ### Configuration
 
-Lingua needs at least the location of one language file in order to work. If this file is selected a `.lingua` settings file will be created in the root of the project. There are some settings available to customize the use of the extension:
+Most of the Lingua settings are located under the extension settings in vscode.
 
-```typescript
-defaultLang: string;
-
-// A keywordfor the language file that is used as default translation.
-// For example: 'en', 'de' or 'fr'
-```
-
-```typescript
-translationFiles: {
-    lang: string;
-    uri: Uri;
-}
-[];
-
-// Key-value-pair of a language key (see defaultLang) and the uri to its language file.
-// Is filled when a language file is added.
-```
-
-```typescript
-analysisFiles:  string[]
-
-// List of filetype endings that are included in the analysis. Default is ['ts','html']
-```
+Lingua also needs at least the location of one language file in order to work. If this file is selected a `.lingua` settings file will be created in the root of the project.
+This file can be shared with collaborators on your project.
 
 ## Planned features:
 
