@@ -12,6 +12,7 @@ import { updateTranslationDecorations } from './decoration';
 import { readSettings, writeSettings } from './lingua-settings';
 import AnalysisReportProvider from './analysis/analysis-report-provider';
 import { posix } from 'path';
+import AutoCompleteProvider from './auto-complete';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -31,6 +32,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
     settings = await readSettings();
     translationSets = new TranslationSets();
+
+    /* Register completion item provider for translations identifiers */
+    let completionProvider = languages.registerCompletionItemProvider(
+        'html',
+        new AutoCompleteProvider(translationSets)
+    );
+    context.subscriptions.push(completionProvider);
 
     /* Register document provider for translation analysis */
     const provider = new AnalysisReportProvider(settings, translationSets);
