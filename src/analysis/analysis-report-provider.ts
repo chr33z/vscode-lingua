@@ -33,20 +33,19 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
     }
 
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
+        const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
+        const extensions = extensionSettings.replace(/\s*/, '').split(',');
+
         if (uri.path === AnalysisReportProvider.usageSchemePath) {
-            return new TranslationUsage()
-                .analyse(this._linguaSettings.analysisExtensions, this._translationSets)
-                .then(translationUsage => {
-                    let document = new UsageReportDocument(uri, translationUsage);
-                    return document.value;
-                });
+            return new TranslationUsage().analyse(extensions, this._translationSets).then(translationUsage => {
+                let document = new UsageReportDocument(uri, translationUsage);
+                return document.value;
+            });
         } else if (uri.path === AnalysisReportProvider.missingSchemePath) {
-            return new TranslationUsage()
-                .analyse(this._linguaSettings.analysisExtensions, this._translationSets)
-                .then(translationUsage => {
-                    let document = new MissingReportDocument(uri, translationUsage);
-                    return document.value;
-                });
+            return new TranslationUsage().analyse(extensions, this._translationSets).then(translationUsage => {
+                let document = new MissingReportDocument(uri, translationUsage);
+                return document.value;
+            });
         } else {
             return '';
         }

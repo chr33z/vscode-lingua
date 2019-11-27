@@ -5,27 +5,8 @@ var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
 
 export class LinguaSettings {
-    /** List if file extensions that are scanned for translation statistics */
-    public analysisExtensions: string[] = ['ts', 'html'];
-
     /** key-value pair of languages associated with their corresponding json file */
     public translationFiles: { lang: string; uri: Uri }[] = [];
-
-    /** The current default language */
-    public defaultLanguage: string = '';
-
-    public decoration: DecorationSettings = new DecorationSettings();
-}
-
-export class DecorationSettings {
-    /** If true translations will be shown inline */
-    public showInlineTranslation = true;
-
-    /** The maximum characters after which a translation is truncated */
-    public maxTranslationLength = 80;
-
-    /** If true the decorator will underline potential translation identifiers */
-    public showPotentialIdentifieres = false;
 }
 
 export async function readSettings(): Promise<LinguaSettings> {
