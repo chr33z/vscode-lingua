@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { workspace, languages, Disposable, window, Uri, TextDocument, commands } from 'vscode';
+import { workspace, languages, Disposable, window, Uri, TextDocument, commands, ConfigurationTarget } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
 import {
@@ -85,8 +85,10 @@ export async function activate(context: vscode.ExtensionContext) {
                 const uri = workspace.asRelativePath(languageFileUri.path);
 
                 writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
-                if (!settings.defaultLanguage) {
-                    writeSettings(settings, 'defaultLanguage', language);
+                if (!workspace.getConfiguration('lingua').get('defaultLanguage')) {
+                    workspace
+                        .getConfiguration('lingua')
+                        .update('defaultLanguage', language, ConfigurationTarget.Global);
                 }
             }
         })
@@ -126,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (activeEditor) {
         updateTranslationSets(settings, translationSets).then(() => {
             if (activeEditor) {
-                updateTranslationDecorations(activeEditor, settings, translationSets.default);
+                updateTranslationDecorations(activeEditor, translationSets.default);
             }
         });
     }
@@ -136,7 +138,7 @@ export async function activate(context: vscode.ExtensionContext) {
             activeEditor = editor;
             updateTranslationSets(settings, translationSets).then(() => {
                 if (activeEditor) {
-                    updateTranslationDecorations(activeEditor, settings, translationSets.default);
+                    updateTranslationDecorations(activeEditor, translationSets.default);
                 }
             });
         },
@@ -156,7 +158,7 @@ export async function activate(context: vscode.ExtensionContext) {
             ) {
                 updateTranslationSets(settings, translationSets).then(() => {
                     if (activeEditor) {
-                        updateTranslationDecorations(activeEditor, settings, translationSets.default);
+                        updateTranslationDecorations(activeEditor, translationSets.default);
                     }
                 });
             }

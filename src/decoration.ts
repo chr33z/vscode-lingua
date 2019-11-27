@@ -1,10 +1,15 @@
-import { TextEditor, DecorationOptions, Range, window, Position, ThemeColor, extensions, workspace, Uri } from 'vscode';
+import { TextEditor, DecorationOptions, Range, window, Position, Uri, workspace } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
 import { LinguaSettings } from './lingua-settings';
 import { posix } from 'path';
 
 const translationDecoration = window.createTextEditorDecorationType({
-    textDecoration: 'underline #494949',
+    light: {
+        textDecoration: 'underline #146462',
+    },
+    dark: {
+        textDecoration: 'underline #1a8582',
+    },
 });
 
 const potentialIdentifierDecoration = window.createTextEditorDecorationType({
@@ -20,11 +25,7 @@ const potentialIdentifierDecoration = window.createTextEditorDecorationType({
  * Scan editor content for possible translations paths and decorate the translation paths
  * with a hover overlay containing the translation
  */
-export function updateTranslationDecorations(
-    editor: TextEditor,
-    settings: LinguaSettings,
-    translationSet: TranslationSet
-) {
+export function updateTranslationDecorations(editor: TextEditor, translationSet: TranslationSet) {
     if (!canDecorateFile(editor.document.uri)) {
         return;
     }
@@ -38,6 +39,11 @@ export function updateTranslationDecorations(
     const translationDecorations: DecorationOptions[] = [];
     const identifierDecorations: DecorationOptions[] = [];
 
+    const maxTranslationLength =
+        workspace.getConfiguration('lingua').get<number>('decoration.maxTranslationLength') || 80;
+    const showInLineTranslation =
+        workspace.getConfiguration('lingua').get<boolean>('decoration.showInlineTranslation') || true;
+
     let match;
     while ((match = regEx.exec(text))) {
         let path = match[0].replace(/['|"|`]/g, '').trim();
@@ -49,30 +55,19 @@ export function updateTranslationDecorations(
         const translation = translationSet.hasTranslation(path);
         const isPartialTranslation = translationSet.isPartialMatch(path);
         const startPos = editor.document.positionAt(match.index + 1);
-        const endPos = editor.document.positionAt(match.index + match[0].length - 1);
-        const n = settings.decoration.maxTranslationLength;
+        const endPos = editor.document.positionAt(match.index + match[0].length);
+        const n = maxTranslationLength;
 
         if (translation) {
             // Translation availble
             const shortTranslation = translation.length > n ? translation.substr(0, n - 1) + '...' : translation;
-            const decoration = getDecoration(
-                settings.decoration.showInlineTranslation,
-                startPos,
-                endPos,
-                shortTranslation
-            );
+            const decoration = getDecoration(showInLineTranslation, startPos, endPos, shortTranslation);
             translationDecorations.push(decoration);
         } else if (isPartialTranslation) {
             // Partial translation
             const shortPath = path.length > n ? path.substr(0, n - 1) + '...' : path;
             const decoration = getDecoration(false, startPos, endPos, 'Translations available: ' + shortPath + ' ...');
             translationDecorations.push(decoration);
-        } else if (settings.decoration.showPotentialIdentifieres) {
-            // Possible identifer without translation
-            const decoration = {
-                range: new Range(startPos, endPos),
-            };
-            identifierDecorations.push(decoration);
         }
     }
 
