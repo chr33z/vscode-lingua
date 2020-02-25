@@ -1,6 +1,8 @@
-# Change Log
+## [0.6.1]
 
-All notable changes to the "lingua" extension will be documented in this file.
+### Fix
+
+-   Fixed potential security vulnerability introduced by a dependency.
 
 ## [0.5.0]
 
