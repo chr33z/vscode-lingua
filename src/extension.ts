@@ -14,7 +14,8 @@ import AnalysisReportProvider from './translation/providers/analysis-report-prov
 import { posix } from 'path';
 import AutoCompleteProvider from './auto-complete';
 import { TranslationSet } from './translation/translation-set';
-import { TranslationDuplicates } from './translation/analysis/translation-duplicates';
+import { TranslationDuplicates } from './translation/duplicates/translation-duplicates';
+import { TranslationDuplicatesDataProvider } from './translation/providers/translation-duplicates-data-provider';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -238,8 +239,12 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
 async function findDuplicates(translationSet: TranslationSet) {
     const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
     const extensions = extensionSettings.replace(/\s*/, '').split(',');
-    TranslationDuplicates.findDuplicatePathLeaves(translationSet);
-    TranslationDuplicates.findDuplicateTranslations(translationSet);
+
+    const duplicateTranslationResults = await TranslationDuplicates.findDuplicateTranslations(translationSet);
+
+    window.createTreeView('duplicateTranslations', {
+        treeDataProvider: new TranslationDuplicatesDataProvider(duplicateTranslationResults),
+    });
 }
 
 /**

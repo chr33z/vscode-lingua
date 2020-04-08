@@ -1,5 +1,5 @@
 import { TranslationSet } from '../translation-set';
-import { workspace, Uri } from 'vscode';
+import { DuplicateTranslationResult } from './duplicate-translation-result';
 
 export class DuplicateLeavesResult {
     public pathLeaf = '';
@@ -13,23 +13,6 @@ export class DuplicateLeavesResult {
                 const pathSegments = path.split('.');
                 this.pathLeaf = pathSegments[pathSegments.length - 1];
             } catch (e) {}
-        }
-    }
-}
-
-/**
- * Datatype representing one translation with a list of paths that have that translation
- */
-export class DuplicateTranslationResult {
-    public translation = '';
-    public occurences = 0;
-    public paths: string[] = [];
-
-    constructor(translation: string, paths: string[]) {
-        if (translation && paths.length > 1) {
-            this.translation = translation;
-            this.paths = paths;
-            this.occurences = paths.length;
         }
     }
 }
@@ -96,11 +79,12 @@ export class TranslationDuplicates {
             }
         });
 
+        // sort from most to least occurneces
         duplicateTranslationsResult.sort((a, b) => {
             if (a.occurences === b.occurences) {
                 return 0;
             } else {
-                return a.occurences < b.occurences ? -1 : 1;
+                return a.occurences > b.occurences ? -1 : 1;
             }
         });
 
