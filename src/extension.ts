@@ -67,13 +67,13 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // context.subscriptions.push(
-    //     vscode.commands.registerCommand('lingua.findDuplicates', async () => {
-    //         updateTranslationSets(settings, translationSets).then(async () => {
-    //             findDuplicates(translationSets.default);
-    //         });
-    //     })
-    // );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('lingua.findDuplicates', async () => {
+            updateTranslationSets(settings, translationSets).then(async () => {
+                findDuplicates(translationSets.default);
+            });
+        })
+    );
 
     /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
@@ -235,12 +235,12 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
     }
 }
 
-// async function findDuplicates(translationSet: TranslationSet) {
-//     const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
-//     const extensions = extensionSettings.replace(/\s*/, '').split(',');
-//     TranslationDuplicates.findDuplicatePathLeaves(translationSet);
-//     TranslationDuplicates.findDuplicateTranslations(translationSet);
-// }
+async function findDuplicates(translationSet: TranslationSet) {
+    const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
+    const extensions = extensionSettings.replace(/\s*/, '').split(',');
+    TranslationDuplicates.findDuplicatePathLeaves(translationSet);
+    TranslationDuplicates.findDuplicateTranslations(translationSet);
+}
 
 /**
  * Check if the current project is a angular project with ngx-translate module

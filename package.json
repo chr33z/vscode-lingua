@@ -36,6 +36,10 @@
                 "title": "Lingua: Analyse translation usage"
             },
             {
+                "command": "lingua.findDuplicates",
+                "title": "Lingua: Find duplicate translations"
+            },
+            {
                 "command": "lingua.gotoTranslation",
                 "title": "Lingua: Goto translation"
             },
