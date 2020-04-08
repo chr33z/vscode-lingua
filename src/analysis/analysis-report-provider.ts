@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import UsageReportDocument from './usage-report-document';
 import { TranslationSets } from '../translation/translation-sets';
-import { TranslationUsage } from '../translation/translation-usage';
+import { TranslationUsage } from '../translation/analysis/translation-usage';
 import { LinguaSettings } from '../lingua-settings';
 import MissingReportDocument from './missing-report-document';
 
@@ -17,7 +17,7 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
     constructor(private _linguaSettings: LinguaSettings, private _translationSets: TranslationSets) {
         // Listen to the `closeTextDocument`-event which means we must
         // clear the corresponding model object - `TranslationReportDocument`
-        this._subscriptions = vscode.workspace.onDidCloseTextDocument(doc =>
+        this._subscriptions = vscode.workspace.onDidCloseTextDocument((doc) =>
             this._documents.delete(doc.uri.toString())
         );
     }
@@ -37,12 +37,12 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
         const extensions = extensionSettings.replace(/\s*/, '').split(',');
 
         if (uri.path === AnalysisReportProvider.usageSchemePath) {
-            return new TranslationUsage().analyse(extensions, this._translationSets).then(translationUsage => {
+            return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
                 let document = new UsageReportDocument(uri, translationUsage);
                 return document.value;
             });
         } else if (uri.path === AnalysisReportProvider.missingSchemePath) {
-            return new TranslationUsage().analyse(extensions, this._translationSets).then(translationUsage => {
+            return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
                 let document = new MissingReportDocument(uri, translationUsage);
                 return document.value;
             });

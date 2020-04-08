@@ -2,8 +2,10 @@ import { isArray } from 'util';
 import { Uri } from 'vscode';
 
 export class TranslationSet {
+    /// A dictionary with a translation path as the key and the translation as its value
     private _mainTranslationSet: { [path: string]: string } = {};
-    private _secondaryTranslationSet: Set<string> = new Set();
+    /// A
+    private _partialTranslationPaths: Set<string> = new Set();
 
     public _file: string = '';
 
@@ -11,7 +13,7 @@ export class TranslationSet {
         return Uri.file(this._file);
     }
 
-    public hasTranslation(path: string): string | null {
+    public getTranslation(path: string): string | null {
         if (this._mainTranslationSet[path]) {
             return this._mainTranslationSet[path];
         } else {
@@ -20,7 +22,7 @@ export class TranslationSet {
     }
 
     public isPartialMatch(path: string): boolean {
-        return this._secondaryTranslationSet.has(path);
+        return this._partialTranslationPaths.has(path);
     }
 
     public isEmpty(): boolean {
@@ -40,10 +42,10 @@ export class TranslationSet {
 
         let translationEntries = 0;
 
-        Object.entries(languageDefinition).forEach(entries => {
+        Object.entries(languageDefinition).forEach((entries) => {
             const paths = this.buildObjectTree(entries);
 
-            paths.forEach(item => {
+            paths.forEach((item) => {
                 this._mainTranslationSet[item.path] = item.translation;
                 translationEntries++;
             });
@@ -56,7 +58,7 @@ export class TranslationSet {
 
         console.log('---------------------');
         console.log(`Found ${translationEntries} translation entries...`);
-        console.log(`Found ${this._secondaryTranslationSet.size} partial translation paths...\n`);
+        console.log(`Found ${this._partialTranslationPaths.size} partial translation paths...\n`);
     }
 
     private buildObjectTree(node: object): { path: string; translation: string }[] {
@@ -73,9 +75,9 @@ export class TranslationSet {
 
                 // branch object has entries
                 if (entries.length > 0) {
-                    entries.forEach(entry => {
+                    entries.forEach((entry) => {
                         const result = this.buildObjectTree(entry);
-                        result.forEach(item => {
+                        result.forEach((item) => {
                             if (item) {
                                 paths.push(item);
                             }
@@ -88,7 +90,7 @@ export class TranslationSet {
                 }
 
                 if (paths.length > 0) {
-                    return paths.map(p => {
+                    return paths.map((p) => {
                         return {
                             path: `${name}.${p.path}`,
                             translation: p.translation,
@@ -111,7 +113,7 @@ export class TranslationSet {
             up until one segment is left. Every reduced path can be itself a 
             partial path that is used for translation.
         */
-        mainPaths.forEach(path => {
+        mainPaths.forEach((path) => {
             let partialPath = path;
             let pathLength = partialPath.split('.').length;
 
@@ -123,7 +125,7 @@ export class TranslationSet {
 
                 pathLength = partialPath.split('.').length;
 
-                this._secondaryTranslationSet.add(partialPath);
+                this._partialTranslationPaths.add(partialPath);
             }
         });
     }

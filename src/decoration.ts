@@ -49,10 +49,10 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
         let path = match[0].replace(/['|"|`]/g, '').trim();
         path = path
             .split('.')
-            .filter(seg => seg.length > 0)
+            .filter((seg) => seg.length > 0)
             .join('.');
 
-        const translation = translationSet.hasTranslation(path);
+        const translation = translationSet.getTranslation(path);
         const isPartialTranslation = translationSet.isPartialMatch(path);
         const startPos = editor.document.positionAt(match.index + 1);
         const endPos = editor.document.positionAt(match.index + match[0].length);

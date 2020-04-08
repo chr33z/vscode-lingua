@@ -1,8 +1,8 @@
 import { Uri, workspace } from 'vscode';
-import { TranslationEntry } from './translation-entry';
+import { TranslationEntry } from '../translation-entry';
 import { TextDecoder } from 'util';
-import { TranslationMatch } from './translation-match';
-import { TranslationSets } from './translation-sets';
+import { TranslationMatch } from '../translation-match';
+import { TranslationSets } from '../translation-sets';
 
 export class TranslationUsage {
     // private regex = new RegExp(/\'[a-zA-Z\.\_\-]+\'/g);
@@ -27,7 +27,7 @@ export class TranslationUsage {
 
         this.totalFiles = uris.length;
 
-        Object.keys(translationSets.get).forEach(locale => {
+        Object.keys(translationSets.get).forEach((locale) => {
             this.totalTranslations[locale] = translationSets.get[locale].keys.length;
         });
 
@@ -48,12 +48,12 @@ export class TranslationUsage {
         this.filterMissing(allIdentifiers);
 
         console.log(`\nFOUND: ${foundKeys.length} translations`);
-        foundKeys.forEach(key => {
+        foundKeys.forEach((key) => {
             console.log(`FOUND: ${key}`);
         });
 
         console.log(`\nMISSING: ${this.missing.length} translations`);
-        this.missing.forEach(identifier => {
+        this.missing.forEach((identifier) => {
             console.log(`MISSING: ${identifier}`);
         });
 
@@ -70,15 +70,15 @@ export class TranslationUsage {
     }
 
     private processSearchResults(matches: RegExpMatchArray, uri: Uri, line: Number, translationSets: TranslationSets) {
-        matches.forEach(match => {
+        matches.forEach((match) => {
             if (!match || match.startsWith("'") || match.startsWith('"') || match.startsWith('`')) {
                 return;
             }
             console.log(match);
             const path = this.preparePath(match);
 
-            Object.keys(translationSets.get).forEach(locale => {
-                let translation: string | null = translationSets.get[locale].hasTranslation(path);
+            Object.keys(translationSets.get).forEach((locale) => {
+                let translation: string | null = translationSets.get[locale].getTranslation(path);
                 let isPartialMatch = translationSets.get[locale].isPartialMatch(path);
 
                 // Constructor is a keyword, that cannot be used as a key in dictionaries
@@ -137,7 +137,7 @@ export class TranslationUsage {
      * with the partial matches
      */
     private filterMissing(keys: string[]) {
-        keys.forEach(key => {
+        keys.forEach((key) => {
             let identifier = key;
 
             while (identifier) {

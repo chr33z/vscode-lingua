@@ -27,17 +27,17 @@ export async function createTranslation(
         return;
     }
 
-    if (translationSet.hasTranslation(identifier)) {
+    if (translationSet.getTranslation(identifier)) {
         window.showInformationMessage('Lingua: There is already a translation with this path.');
     } else {
         const translation = await window.showInputBox({ placeHolder: 'Enter translation...' });
 
         if (translation) {
             await updateTranslationFile(translationSet.uri, identifier, translation, true)
-                .then(_ => {
+                .then((_) => {
                     return Promise.resolve();
                 })
-                .catch(_ => {
+                .catch((_) => {
                     window.showWarningMessage(
                         `Lingua: The path ${identifier} already exists! Cannot create translation.`,
                         { modal: true }
@@ -64,7 +64,7 @@ export async function locateTranslation(translationSet: TranslationSet, document
         return;
     }
 
-    if (!translationSet.hasTranslation(identifier) && !translationSet.isPartialMatch(identifier)) {
+    if (!translationSet.getTranslation(identifier) && !translationSet.isPartialMatch(identifier)) {
         window.showWarningMessage(
             `Lingua: Could not find '${identifier}' in ${posix.basename(translationSet.uri.path)}`
         );
@@ -113,10 +113,10 @@ export async function changeTranslation(
 
     if (newTranslation) {
         await updateTranslationFile(translationSet.uri, identifier, newTranslation, true)
-            .then(_ => {
+            .then((_) => {
                 return Promise.resolve();
             })
-            .catch(_ => {
+            .catch((_) => {
                 window.showWarningMessage(`Lingua: Error changing translation for ${identifier}`);
                 return Promise.reject();
             });
@@ -133,7 +133,7 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
         return;
     }
 
-    if (translationSet.hasTranslation(text) || translationSet.isPartialMatch(text)) {
+    if (translationSet.getTranslation(text) || translationSet.isPartialMatch(text)) {
         window.showWarningMessage(
             `Lingua: "${truncateText(text, 20)}" already is a translation identifier. Cannot create translation.`
         );
@@ -146,7 +146,7 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
         if (isIdentifier(translationIdentifer)) {
             // add new translation to translation file
             await updateTranslationFile(translationSet.uri, translationIdentifer, text)
-                .then(async _ => {
+                .then(async (_) => {
                     // replace source selection with translation construct
                     const edit = new WorkspaceEdit();
                     edit.replace(editor.document.uri, editor.selection, `{{ '${translationIdentifer}' | translate }`);
@@ -154,7 +154,7 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
 
                     return Promise.resolve();
                 })
-                .catch(_ => {
+                .catch((_) => {
                     window.showWarningMessage(`Lingua: Error adding translation for ${truncateText(text, 20)}`);
                 });
         } else {
@@ -282,7 +282,7 @@ function addTranslation(json: any, path: string, translation: string, overwrite:
 }
 
 async function updateTranslationFile(uri: Uri, identifier: string, translation: string, overwrite: boolean = false) {
-    workspace.openTextDocument(uri).then(async doc => {
+    workspace.openTextDocument(uri).then(async (doc) => {
         const json = JSON.parse(doc.getText());
 
         if (addTranslation(json, identifier, translation, overwrite)) {

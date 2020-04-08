@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TranslationUsage } from '../translation/translation-usage';
+import { TranslationUsage } from '../translation/analysis/translation-usage';
 
 export default class MissingReportDocument {
     private readonly _translationUsage: TranslationUsage;
@@ -24,7 +24,7 @@ export default class MissingReportDocument {
         this._lines.push('');
 
         this._lines.push(`Translation identifiers:`);
-        Object.keys(this._translationUsage.totalTranslations).forEach(locale => {
+        Object.keys(this._translationUsage.totalTranslations).forEach((locale) => {
             this._lines.push(`\t[${locale}]:\t\t\t\t${this._translationUsage.totalTranslations[locale]}`);
         });
 
@@ -46,7 +46,7 @@ export default class MissingReportDocument {
     }
 
     private populateMissing() {
-        this._translationUsage.missing.forEach(missing => {
+        this._translationUsage.missing.forEach((missing) => {
             this._lines.push(`Path:\t\t${missing}`);
         });
     }
