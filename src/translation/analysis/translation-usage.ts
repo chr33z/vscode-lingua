@@ -3,6 +3,7 @@ import { TranslationEntry } from '../translation-entry';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from '../translation-match';
 import { TranslationSets } from '../translation-sets';
+import { findFiles as findProjectFiles } from '../../utils';
 
 export class TranslationUsage {
     // private regex = new RegExp(/\'[a-zA-Z\.\_\-]+\'/g);
@@ -21,7 +22,7 @@ export class TranslationUsage {
             return Promise.reject();
         }
 
-        const uris = await this.findFiles(fileTypes);
+        const uris = await findProjectFiles(fileTypes);
 
         console.log(`Found ${uris.length} files to scan for translations...\n`);
 
@@ -123,13 +124,6 @@ export class TranslationUsage {
             path = path.slice(0, path.length - 1);
         }
         return path;
-    }
-
-    private findFiles(includeExt: string[]) {
-        const searchPattern = `**/src/**/*.{${includeExt.reduce((i, j) => i + ',' + j)}}`;
-        // const searchPattern = `**/src/**/dashboard.page.html`;
-        const excludePattern = `**/node_modules/**`;
-        return workspace.findFiles(searchPattern, excludePattern);
     }
 
     /**

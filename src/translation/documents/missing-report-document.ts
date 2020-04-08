@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TranslationUsage } from '../translation/analysis/translation-usage';
+import { TranslationUsage } from '../analysis/translation-usage';
 
 export default class MissingReportDocument {
     private readonly _translationUsage: TranslationUsage;

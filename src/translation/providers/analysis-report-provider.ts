@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import UsageReportDocument from './usage-report-document';
-import { TranslationSets } from '../translation/translation-sets';
-import { TranslationUsage } from '../translation/analysis/translation-usage';
-import { LinguaSettings } from '../lingua-settings';
-import MissingReportDocument from './missing-report-document';
+import UsageReportDocument from '../documents/usage-report-document';
+import { TranslationSets } from '../translation-sets';
+import { TranslationUsage } from '../analysis/translation-usage';
+import { LinguaSettings } from '../../lingua-settings';
+import MissingReportDocument from '../documents/missing-report-document';
 
 export default class AnalysisReportProvider implements vscode.TextDocumentContentProvider, vscode.DocumentLinkProvider {
     static scheme = 'lingua';

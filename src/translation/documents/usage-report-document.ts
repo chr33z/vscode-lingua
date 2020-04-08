@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { TranslationUsage } from '../translation/analysis/translation-usage';
-import { TranslationMatch } from '../translation/translation-match';
+import { TranslationUsage } from '../analysis/translation-usage';
+import { TranslationMatch } from '../translation-match';
 
 export default class UsageReportDocument {
     private readonly _translationUsage: TranslationUsage;
