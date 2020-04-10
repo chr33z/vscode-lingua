@@ -20,6 +20,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "C:\\Development\\alberta.mobile",
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
             ],
