@@ -22,7 +22,7 @@ export async function readSettings(): Promise<LinguaSettings> {
         }
     }
 
-    console.log('[Lingua] [Settings] Loading default settings...');
+    console.debug('[Lingua] [Settings] Loading default settings...');
     return Promise.resolve(new LinguaSettings());
 }
 

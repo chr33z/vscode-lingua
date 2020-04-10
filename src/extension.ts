@@ -245,8 +245,8 @@ async function findDuplicates(translationSet: TranslationSet) {
 /**
  * Check if the current project is a angular project with ngx-translate module
  */
-async function isNgxTranslateProject(): Promise<boolean> {
-    const isAngular = await workspace.findFiles('**/angular.json', `**/node_modules/**`);
-    const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/ngx-translate*');
+export async function isNgxTranslateProject(): Promise<boolean> {
+    const isAngular = await workspace.findFiles('**/**/angular.json', `**/node_modules/**`, 1);
+    const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/*ngx-translate*', null, 1);
     return isAngular.length > 0 && hasNgxTranslateModule.length > 0;
 }
