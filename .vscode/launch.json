@@ -19,7 +19,9 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
+            "sourceMaps": true,
             "args": [
+                "${workspaceFolder}/../vscode-lingua-testproject",
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
             ],
