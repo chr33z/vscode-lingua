@@ -1,28 +1,43 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
-import { LinguaSettings, readSettings, writeSettings } from '../../lingua-settings';
+import { LinguaSettings, readSettings } from '../../lingua-settings';
 
 suite('Lingua Settings', () => {
     const deleteLinguaSettings = async function () {
-        const linguaSettingsFile = await vscode.workspace.findFiles('**/**/.lingua', `**/node_modules/**`, 1);
+        const linguaSettingsFile = await vscode.workspace.findFiles('**/.lingua', `**/node_modules/**`, 1);
         if (linguaSettingsFile.length > 0) {
-            vscode.workspace.fs.delete(linguaSettingsFile[0]);
+            await vscode.workspace.fs.delete(linguaSettingsFile[0]);
         }
     };
 
+    setup(async () => {
+        await deleteLinguaSettings();
+    });
+
+    teardown(async () => {
+        await deleteLinguaSettings();
+    });
+
     test('read settings', async () => {
-        deleteLinguaSettings();
+        await deleteLinguaSettings();
+
         const settings: LinguaSettings = await readSettings();
         expect(settings).to.exist;
     });
 
-    test('write settings', async () => {
-        deleteLinguaSettings();
+    test('add and remove translation set to settings', async () => {
+        await deleteLinguaSettings();
+
         let settings: LinguaSettings = await readSettings();
-        writeSettings(settings, 'translationFiles', [{ lang: 'test', uri: vscode.Uri.file('') }]);
+        await settings.addTranslationSet('test', '');
         settings = await readSettings();
 
-        expect(settings.translationFiles.length).to.eq(1);
-        expect(settings.translationFiles[0].lang).to.eq('test');
+        expect(Object.keys(settings.translationFiles).length).to.eq(1);
+        expect(Object.keys(settings.translationFiles)[0]).to.eq('test');
+
+        await settings.removeTranslationSet('test');
+        settings = await readSettings();
+
+        expect(Object.keys(settings.translationFiles).length).to.eq(0);
     });
 });

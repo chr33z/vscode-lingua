@@ -9,7 +9,7 @@ import {
     convertToTranslation,
 } from './translation/translation-utils';
 import { updateTranslationDecorations } from './decoration';
-import { readSettings, writeSettings } from './lingua-settings';
+import { readSettings } from './lingua-settings';
 import AnalysisReportProvider from './translation/providers/analysis-report-provider';
 import { posix } from 'path';
 import AutoCompleteProvider from './auto-complete';
@@ -92,9 +92,9 @@ export async function activate(context: vscode.ExtensionContext) {
             });
             if (language) {
                 // TODO: fix this uri madness
-                const uri = workspace.asRelativePath(languageFileUri.path);
+                const relativePath = workspace.asRelativePath(languageFileUri.path);
 
-                writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
+                settings.addTranslationSet(language, relativePath);
                 if (!workspace.getConfiguration('lingua').get('defaultLanguage')) {
                     workspace
                         .getConfiguration('lingua')
