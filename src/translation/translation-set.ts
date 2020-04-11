@@ -31,10 +31,10 @@ export class TranslationSet {
     }
 
     public async build(uri: Uri, languageDefinition: object) {
-        console.log(`\nScanning for translation entries...`);
-        console.log('---------------------');
+        console.debug(`\nScanning for translation entries...`);
+        console.debug('---------------------');
 
-        console.log('Building main translation set...');
+        console.debug('Building main translation set...');
         this.uri = uri;
 
         let translationEntries = 0;
@@ -47,15 +47,15 @@ export class TranslationSet {
                 translationEntries++;
             });
         });
-        console.log('Building main translation set... done');
+        console.debug('Building main translation set... done');
 
-        console.log('Building secondary translation set...');
+        console.debug('Building secondary translation set...');
         this.buildpartialTranslationSet();
-        console.log('Building secondary translation set... done');
+        console.debug('Building secondary translation set... done');
 
-        console.log('---------------------');
-        console.log(`Found ${translationEntries} translation entries...`);
-        console.log(`Found ${this._partialTranslationPaths.size} partial translation paths...\n`);
+        console.debug('---------------------');
+        console.debug(`Found ${translationEntries} translation entries...`);
+        console.debug(`Found ${this._partialTranslationPaths.size} partial translation paths...\n`);
     }
 
     private buildMainTranslationSet(node: object): { path: string; translation: string }[] {

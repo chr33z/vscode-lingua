@@ -29,19 +29,20 @@ export class TranslationSets {
         return this._translationSets[defaultLocale];
     }
 
-    async build(settings: LinguaSettings) {
+    public async build(settings: LinguaSettings) {
         this._settings = settings;
 
         await Promise.all(
-            settings.translationFiles.map(async localeFile => {
+            Object.keys(settings.translationFiles).map(async (language) => {
+                const localeFile = settings.translationFiles[language];
                 try {
-                    const absoluteUri = Uri.file(`${workspace.rootPath}/${localeFile.uri}`);
-                    await workspace.openTextDocument(absoluteUri).then(document => {
+                    const absoluteUri = Uri.file(`${workspace.rootPath}/${localeFile}`);
+                    await workspace.openTextDocument(absoluteUri).then((document) => {
                         if (document) {
                             const json = document.getText();
                             const translationSet = new TranslationSet();
                             translationSet.build(absoluteUri, JSON.parse(json));
-                            this._translationSets[localeFile.lang] = translationSet;
+                            this._translationSets[language] = translationSet;
                         }
                     });
                 } catch (e) {
