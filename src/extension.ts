@@ -7,12 +7,14 @@ import {
     locateTranslation,
     changeTranslation,
     convertToTranslation,
-} from './translation/translation-utils';
+} from './translation/translation-commands';
 import { updateTranslationDecorations } from './decoration';
-import { readSettings, writeSettings } from './lingua-settings';
-import AnalysisReportProvider from './analysis/analysis-report-provider';
+import { readSettings } from './lingua-settings';
+import AnalysisReportProvider from './translation/providers/analysis-report-provider';
 import { posix } from 'path';
 import AutoCompleteProvider from './auto-complete';
+import { TranslationSet } from './translation/translation-set';
+import { TranslationDuplicates } from './translation/analysis/translation-duplicates';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -65,16 +67,24 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('lingua.findDuplicates', async () => {
+            updateTranslationSets(settings, translationSets).then(async () => {
+                findDuplicates(translationSets.default);
+            });
+        })
+    );
+
     /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async editor => {
+        vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async (editor) => {
             gotoTranslation(settings, translationSets, editor.document, editor.selection);
         })
     );
 
     /* Set the currently opened file as a translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async editor => {
+        vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async (editor) => {
             const languageFileUri = editor.document.uri;
 
             const language = await window.showInputBox({
@@ -82,9 +92,9 @@ export async function activate(context: vscode.ExtensionContext) {
             });
             if (language) {
                 // TODO: fix this uri madness
-                const uri = workspace.asRelativePath(languageFileUri.path);
+                const relativePath = workspace.asRelativePath(languageFileUri.path);
 
-                writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
+                settings.addTranslationSet(language, relativePath);
                 if (!workspace.getConfiguration('lingua').get('defaultLanguage')) {
                     workspace
                         .getConfiguration('lingua')
@@ -96,7 +106,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Create a translation for the selected translation identifier */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async editor => {
+        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 createTranslation(translationSets, editor.document, editor.selection);
             });
@@ -105,7 +115,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Change a translation for the selected translation identifier */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async editor => {
+        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 changeTranslation(translationSets, editor.document, editor.selection);
             });
@@ -114,7 +124,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Convert a selected text to a translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async editor => {
+        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 convertToTranslation(translationSets, editor);
             });
@@ -134,7 +144,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     vscode.window.onDidChangeActiveTextEditor(
-        async editor => {
+        async (editor) => {
             activeEditor = editor;
             updateTranslationSets(settings, translationSets).then(() => {
                 if (activeEditor) {
@@ -147,7 +157,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     vscode.workspace.onDidChangeTextDocument(
-        async event => {
+        async (event) => {
             const translationSetUri = translationSets.default.uri;
 
             // update either if content of current editor is changed or if content of
@@ -168,7 +178,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     vscode.workspace.onDidSaveTextDocument(
-        async event => {
+        async (event) => {
             if (posix.extname(event.fileName) === '.lingua') {
                 settings = await readSettings();
             }
@@ -225,11 +235,18 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
     }
 }
 
+async function findDuplicates(translationSet: TranslationSet) {
+    const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
+    const extensions = extensionSettings.replace(/\s*/, '').split(',');
+    TranslationDuplicates.findDuplicatePathLeaves(translationSet);
+    TranslationDuplicates.findDuplicateTranslations(translationSet);
+}
+
 /**
  * Check if the current project is a angular project with ngx-translate module
  */
-async function isNgxTranslateProject(): Promise<boolean> {
-    const isAngular = await workspace.findFiles('**/angular.json', `**/node_modules/**`);
-    const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/ngx-translate*');
+export async function isNgxTranslateProject(): Promise<boolean> {
+    const isAngular = await workspace.findFiles('**/**/angular.json', `**/node_modules/**`, 1);
+    const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/*ngx-translate*', null, 1);
     return isAngular.length > 0 && hasNgxTranslateModule.length > 0;
 }

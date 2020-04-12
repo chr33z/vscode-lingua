@@ -5,8 +5,18 @@ var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
 
 export class LinguaSettings {
-    /** key-value pair of languages associated with their corresponding json file */
-    public translationFiles: { lang: string; uri: Uri }[] = [];
+    public translationFiles: { lang: string; uri: string }[] = [];
+
+    public async addTranslationSet(language: string, relativePath: string) {
+        this.translationFiles.push({ lang: language, uri: relativePath });
+        await writeSettings(this);
+    }
+
+    public async removeTranslationSet(language: string) {
+        const filteredFiles = this.translationFiles.filter((f) => f.lang !== language);
+        this.translationFiles = filteredFiles;
+        await writeSettings(this);
+    }
 }
 
 export async function readSettings(): Promise<LinguaSettings> {
@@ -18,23 +28,19 @@ export async function readSettings(): Promise<LinguaSettings> {
             const settings = assign(new LinguaSettings(), JSON.parse(doc.getText()));
             return Promise.resolve(settings);
         } catch (e) {
-            console.warn('Could not load .lingua settings file in root directory');
+            console.debug('Could not load .lingua settings file in root directory');
         }
     }
 
-    console.log('[Lingua] [Settings] Loading default settings...');
+    console.debug('[Lingua] [Settings] Loading default settings...');
     return Promise.resolve(new LinguaSettings());
 }
 
-export async function writeSettings(settings: LinguaSettings, key: string, value: any) {
-    if (key in settings) {
-        (settings as any)[key] = value;
-    }
-
+async function writeSettings(settings: LinguaSettings) {
     if (workspace.workspaceFolders) {
         try {
             const uri = Uri.file(`${workspace.rootPath}/.lingua`);
-            workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
+            await workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
             window.showInformationMessage(
                 'Lingua: Created/Updated the .lingua settings file in your workspace directory'
             );

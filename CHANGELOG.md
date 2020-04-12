@@ -1,3 +1,12 @@
+## [0.7.0]
+
+### Fix
+
+-   Added test coverage
+-   Fixed identification of ngx-translate projects
+-   Fixed potential security vulnerability introduced by a dependency.
+-   Fixed minor bugs
+
 ## [0.6.1]
 
 ### Fix

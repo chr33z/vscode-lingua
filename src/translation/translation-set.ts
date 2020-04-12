@@ -2,16 +2,15 @@ import { isArray } from 'util';
 import { Uri } from 'vscode';
 
 export class TranslationSet {
+    /// A dictionary with a translation path as the key and the translation as its value
     private _mainTranslationSet: { [path: string]: string } = {};
-    private _secondaryTranslationSet: Set<string> = new Set();
 
-    public _file: string = '';
+    /// A set with partial translations paths to check against
+    private _partialTranslationPaths: Set<string> = new Set();
 
-    public get uri(): Uri {
-        return Uri.file(this._file);
-    }
+    public uri: Uri = Uri.file('');
 
-    public hasTranslation(path: string): string | null {
+    public getTranslation(path: string): string | null {
         if (this._mainTranslationSet[path]) {
             return this._mainTranslationSet[path];
         } else {
@@ -20,11 +19,11 @@ export class TranslationSet {
     }
 
     public isPartialMatch(path: string): boolean {
-        return this._secondaryTranslationSet.has(path);
+        return this._partialTranslationPaths.has(path);
     }
 
     public isEmpty(): boolean {
-        return !!!this._file;
+        return this.keys.length < 1;
     }
 
     public get keys(): string[] {
@@ -32,34 +31,34 @@ export class TranslationSet {
     }
 
     public async build(uri: Uri, languageDefinition: object) {
-        console.log(`\nScanning for translation entries...`);
-        console.log('---------------------');
+        console.debug(`\nScanning for translation entries...`);
+        console.debug('---------------------');
 
-        console.log('Building main translation set...');
-        this._file = uri.path;
+        console.debug('Building main translation set...');
+        this.uri = uri;
 
         let translationEntries = 0;
 
-        Object.entries(languageDefinition).forEach(entries => {
-            const paths = this.buildObjectTree(entries);
+        Object.entries(languageDefinition).forEach((entries) => {
+            const paths = this.buildMainTranslationSet(entries);
 
-            paths.forEach(item => {
+            paths.forEach((item) => {
                 this._mainTranslationSet[item.path] = item.translation;
                 translationEntries++;
             });
         });
-        console.log('Building main translation set... done');
+        console.debug('Building main translation set... done');
 
-        console.log('Building secondary translation set...');
-        this.buildSecondaryTranslationSet();
-        console.log('Building secondary translation set... done');
+        console.debug('Building secondary translation set...');
+        this.buildpartialTranslationSet();
+        console.debug('Building secondary translation set... done');
 
-        console.log('---------------------');
-        console.log(`Found ${translationEntries} translation entries...`);
-        console.log(`Found ${this._secondaryTranslationSet.size} partial translation paths...\n`);
+        console.debug('---------------------');
+        console.debug(`Found ${translationEntries} translation entries...`);
+        console.debug(`Found ${this._partialTranslationPaths.size} partial translation paths...\n`);
     }
 
-    private buildObjectTree(node: object): { path: string; translation: string }[] {
+    private buildMainTranslationSet(node: object): { path: string; translation: string }[] {
         if (isArray(node)) {
             const name = node[0];
 
@@ -73,9 +72,9 @@ export class TranslationSet {
 
                 // branch object has entries
                 if (entries.length > 0) {
-                    entries.forEach(entry => {
-                        const result = this.buildObjectTree(entry);
-                        result.forEach(item => {
+                    entries.forEach((entry) => {
+                        const result = this.buildMainTranslationSet(entry);
+                        result.forEach((item) => {
                             if (item) {
                                 paths.push(item);
                             }
@@ -88,7 +87,7 @@ export class TranslationSet {
                 }
 
                 if (paths.length > 0) {
-                    return paths.map(p => {
+                    return paths.map((p) => {
                         return {
                             path: `${name}.${p.path}`,
                             translation: p.translation,
@@ -103,7 +102,7 @@ export class TranslationSet {
         }
     }
 
-    private buildSecondaryTranslationSet() {
+    private buildpartialTranslationSet() {
         const mainPaths = Object.keys(this._mainTranslationSet);
 
         /*
@@ -111,7 +110,7 @@ export class TranslationSet {
             up until one segment is left. Every reduced path can be itself a 
             partial path that is used for translation.
         */
-        mainPaths.forEach(path => {
+        mainPaths.forEach((path) => {
             let partialPath = path;
             let pathLength = partialPath.split('.').length;
 
@@ -123,7 +122,7 @@ export class TranslationSet {
 
                 pathLength = partialPath.split('.').length;
 
-                this._secondaryTranslationSet.add(partialPath);
+                this._partialTranslationPaths.add(partialPath);
             }
         });
     }

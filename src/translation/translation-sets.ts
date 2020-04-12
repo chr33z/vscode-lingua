@@ -29,14 +29,14 @@ export class TranslationSets {
         return this._translationSets[defaultLocale];
     }
 
-    async build(settings: LinguaSettings) {
+    public async build(settings: LinguaSettings) {
         this._settings = settings;
 
         await Promise.all(
-            settings.translationFiles.map(async localeFile => {
+            settings.translationFiles.map(async (localeFile) => {
                 try {
                     const absoluteUri = Uri.file(`${workspace.rootPath}/${localeFile.uri}`);
-                    await workspace.openTextDocument(absoluteUri).then(document => {
+                    await workspace.openTextDocument(absoluteUri).then((document) => {
                         if (document) {
                             const json = document.getText();
                             const translationSet = new TranslationSet();

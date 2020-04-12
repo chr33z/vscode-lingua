@@ -31,9 +31,9 @@ export default class AutoCompleteProvider implements CompletionItemProvider {
         }
 
         let translationCompletes: CompletionItem[] = [];
-        this._translationSets.default.keys.forEach(key => {
+        this._translationSets.default.keys.forEach((key) => {
             const item = new CompletionItem(key);
-            const translation = this._translationSets.default.hasTranslation(key) || undefined;
+            const translation = this._translationSets.default.getTranslation(key) || undefined;
             item.documentation = new MarkdownString(translation);
             translationCompletes.push(item);
         });

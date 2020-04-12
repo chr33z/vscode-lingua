@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { TranslationUsage } from '../translation/translation-usage';
-import { TranslationMatch } from '../translation/translation-match';
+import { TranslationUsage } from '../analysis/translation-usage';
+import { TranslationMatch } from '../translation-match';
 
 export default class UsageReportDocument {
     private readonly _translationUsage: TranslationUsage;
@@ -17,7 +17,7 @@ export default class UsageReportDocument {
         this._lines.push('');
 
         this._lines.push(`Translation strings:`);
-        Object.keys(this._translationUsage.totalTranslations).forEach(locale => {
+        Object.keys(this._translationUsage.totalTranslations).forEach((locale) => {
             this._lines.push(`\t[${locale}]:\t\t\t\t${this._translationUsage.totalTranslations[locale]}`);
         });
         this._lines.push(`Scanned files:\t\t\t${this._translationUsage.totalFiles}`);
