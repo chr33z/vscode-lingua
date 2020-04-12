@@ -2,7 +2,9 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import { LinguaSettings } from '../../lingua-settings';
 import { TranslationSets } from '../../translation/translation-sets';
+import { TranslationSet } from '../../translation/translation-set';
 
+// tslint:disable: no-unused-expression
 suite('Translation Set', () => {
     const addTranslationSets = async function (): Promise<TranslationSets> {
         const excludePattern = '**/node_modules/**';
@@ -17,6 +19,16 @@ suite('Translation Set', () => {
         await translationSets.build(settings);
         return translationSets;
     };
+
+    test('translation set is emtpy', () => {
+        const translationSet = new TranslationSet();
+        expect(translationSet.isEmpty()).to.be.true;
+    });
+
+    test('translation is not emtpy', async () => {
+        const translationSets = await addTranslationSets();
+        expect(translationSets.default.isEmpty()).to.be.false;
+    });
 
     test('add translationsets', async () => {
         const translationSets = await addTranslationSets();

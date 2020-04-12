@@ -23,7 +23,7 @@ export class TranslationSet {
     }
 
     public isEmpty(): boolean {
-        return this.keys.length > 0;
+        return this.keys.length < 1;
     }
 
     public get keys(): string[] {
