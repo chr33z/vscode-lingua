@@ -3,7 +3,7 @@ import { TranslationEntry } from '../translation-entry';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from '../translation-match';
 import { TranslationSets } from '../translation-sets';
-import { findFiles as findProjectFiles } from '../../utils';
+import { findFilesWithExtension as findProjectFiles } from '../../utils';
 
 export class TranslationUsage {
     // private regex = new RegExp(/\'[a-zA-Z\.\_\-]+\'/g);

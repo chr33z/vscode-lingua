@@ -7,9 +7,9 @@ import {
     locateTranslation,
     changeTranslation,
     convertToTranslation,
-} from './translation/translation-utils';
+} from './translation/translation-commands';
 import { updateTranslationDecorations } from './decoration';
-import { readSettings, writeSettings } from './lingua-settings';
+import { readSettings } from './lingua-settings';
 import AnalysisReportProvider from './translation/providers/analysis-report-provider';
 import { posix } from 'path';
 import AutoCompleteProvider from './auto-complete';
@@ -67,13 +67,13 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // context.subscriptions.push(
-    //     vscode.commands.registerCommand('lingua.findDuplicates', async () => {
-    //         updateTranslationSets(settings, translationSets).then(async () => {
-    //             findDuplicates(translationSets.default);
-    //         });
-    //     })
-    // );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('lingua.findDuplicates', async () => {
+            updateTranslationSets(settings, translationSets).then(async () => {
+                findDuplicates(translationSets.default);
+            });
+        })
+    );
 
     /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
@@ -92,9 +92,9 @@ export async function activate(context: vscode.ExtensionContext) {
             });
             if (language) {
                 // TODO: fix this uri madness
-                const uri = workspace.asRelativePath(languageFileUri.path);
+                const relativePath = workspace.asRelativePath(languageFileUri.path);
 
-                writeSettings(settings, 'translationFiles', [{ lang: language, uri: uri }]);
+                settings.addTranslationSet(language, relativePath);
                 if (!workspace.getConfiguration('lingua').get('defaultLanguage')) {
                     workspace
                         .getConfiguration('lingua')
@@ -235,12 +235,12 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
     }
 }
 
-// async function findDuplicates(translationSet: TranslationSet) {
-//     const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
-//     const extensions = extensionSettings.replace(/\s*/, '').split(',');
-//     TranslationDuplicates.findDuplicatePathLeaves(translationSet);
-//     TranslationDuplicates.findDuplicateTranslations(translationSet);
-// }
+async function findDuplicates(translationSet: TranslationSet) {
+    const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
+    const extensions = extensionSettings.replace(/\s*/, '').split(',');
+    TranslationDuplicates.findDuplicatePathLeaves(translationSet);
+    TranslationDuplicates.findDuplicateTranslations(translationSet);
+}
 
 /**
  * Check if the current project is a angular project with ngx-translate module

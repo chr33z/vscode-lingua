@@ -36,6 +36,10 @@
                 "title": "Lingua: Analyse translation usage"
             },
             {
+                "command": "lingua.findDuplicates",
+                "title": "Lingua: Find duplicate translations"
+            },
+            {
                 "command": "lingua.gotoTranslation",
                 "title": "Lingua: Goto translation"
             },
@@ -156,7 +160,7 @@
         "webpack-dev": "webpack --mode development --watch",
         "test-compile": "tsc -p ./",
         "compile": "webpack --mode none",
-        "watch": "webpack --mode none",
+        "watch": "tsc --build --force tsconfig.json && webpack --mode none",
         "pretest": "npm run compile",
         "test": "tsc --build tsconfig.json && node ./out/test/runTest.js"
     },
