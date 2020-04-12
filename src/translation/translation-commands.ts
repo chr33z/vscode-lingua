@@ -146,7 +146,7 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
                 .then(async (_) => {
                     // replace source selection with translation construct
                     const edit = new WorkspaceEdit();
-                    edit.replace(editor.document.uri, editor.selection, `{{ '${translationIdentifer}' | translate }`);
+                    edit.replace(editor.document.uri, editor.selection, `{{ '${translationIdentifer}' | translate }}`);
                     await workspace.applyEdit(edit);
 
                     return Promise.resolve();
