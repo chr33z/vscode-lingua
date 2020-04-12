@@ -7,7 +7,7 @@ import {
     locateTranslation,
     changeTranslation,
     convertToTranslation,
-} from './translation/translation-utils';
+} from './translation/translation-commands';
 import { updateTranslationDecorations } from './decoration';
 import { readSettings } from './lingua-settings';
 import AnalysisReportProvider from './translation/providers/analysis-report-provider';

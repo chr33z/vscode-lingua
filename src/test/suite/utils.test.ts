@@ -10,6 +10,6 @@ suite('Utils', () => {
         const htmlFiles = files.filter((f) => f.path.endsWith('html'));
 
         expect(tsFiles.length).to.eq(10);
-        expect(htmlFiles.length).to.eq(2);
+        expect(htmlFiles.length).to.eq(3);
     });
 });

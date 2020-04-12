@@ -28,7 +28,7 @@ export async function readSettings(): Promise<LinguaSettings> {
             const settings = assign(new LinguaSettings(), JSON.parse(doc.getText()));
             return Promise.resolve(settings);
         } catch (e) {
-            console.warn('Could not load .lingua settings file in root directory');
+            console.debug('Could not load .lingua settings file in root directory');
         }
     }
 

@@ -33,16 +33,15 @@ export class TranslationSets {
         this._settings = settings;
 
         await Promise.all(
-            Object.keys(settings.translationFiles).map(async (language) => {
-                const localeFile = settings.translationFiles[language];
+            settings.translationFiles.map(async (localeFile) => {
                 try {
-                    const absoluteUri = Uri.file(`${workspace.rootPath}/${localeFile}`);
+                    const absoluteUri = Uri.file(`${workspace.rootPath}/${localeFile.uri}`);
                     await workspace.openTextDocument(absoluteUri).then((document) => {
                         if (document) {
                             const json = document.getText();
                             const translationSet = new TranslationSet();
                             translationSet.build(absoluteUri, JSON.parse(json));
-                            this._translationSets[language] = translationSet;
+                            this._translationSets[localeFile.lang] = translationSet;
                         }
                     });
                 } catch (e) {
