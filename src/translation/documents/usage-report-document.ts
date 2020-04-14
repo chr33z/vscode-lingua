@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { TranslationUsage } from '../analysis/translation-usage';
-import { TranslationMatch } from '../translation-match';
+import { TranslationMatch } from '../analysis/translation-match';
 
 export default class UsageReportDocument {
     private readonly _translationUsage: TranslationUsage;
@@ -18,7 +18,7 @@ export default class UsageReportDocument {
 
         this._lines.push(`Translation strings:`);
         Object.keys(this._translationUsage.totalTranslations).forEach((locale) => {
-            this._lines.push(`\t[${locale}]:\t\t\t\t${this._translationUsage.totalTranslations[locale]}`);
+            this._lines.push(`\t[${locale}]:\t\t\t\t${this._translationUsage.totalTranslations.get(locale)}`);
         });
         this._lines.push(`Scanned files:\t\t\t${this._translationUsage.totalFiles}`);
         this._lines.push(`Found translations:\t\t${Object.keys(this._translationUsage.found).length}`);
@@ -43,9 +43,9 @@ export default class UsageReportDocument {
 
     private populateMatches() {
         for (const path of Object.keys(this._translationUsage.found)) {
-            const entry = this._translationUsage.found[path];
+            const entry = this._translationUsage.found.get(path);
 
-            if (entry.match === TranslationMatch.Match) {
+            if (entry && entry.match === TranslationMatch.Match) {
                 this._lines.push(`Path (${entry.locale}):\t\t${entry.translationPath}`);
                 this._lines.push(`Translation:\t${entry.translation}`);
 
@@ -59,9 +59,9 @@ export default class UsageReportDocument {
 
     private populatePartialMatches() {
         for (const path of Object.keys(this._translationUsage.found)) {
-            const entry = this._translationUsage.found[path];
+            const entry = this._translationUsage.found.get(path);
 
-            if (entry.match === TranslationMatch.PartialMatch) {
+            if (entry && entry.match === TranslationMatch.PartialMatch) {
                 this._lines.push(`Path (${entry.locale}):\t\t${entry.translationPath}`);
                 this._lines.push(`Translation:\t---`);
 

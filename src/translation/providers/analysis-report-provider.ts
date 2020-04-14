@@ -4,6 +4,7 @@ import { TranslationSets } from '../translation-sets';
 import { TranslationUsage } from '../analysis/translation-usage';
 import { LinguaSettings } from '../../lingua-settings';
 import MissingReportDocument from '../documents/missing-report-document';
+import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 
 export default class AnalysisReportProvider implements vscode.TextDocumentContentProvider, vscode.DocumentLinkProvider {
     static scheme = 'lingua';
@@ -36,16 +37,27 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
         const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
         const extensions = extensionSettings.replace(/\s*/, '').split(',');
 
-        if (uri.path === AnalysisReportProvider.usageSchemePath) {
-            return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
-                let document = new UsageReportDocument(uri, translationUsage);
+        // if (uri.path === AnalysisReportProvider.usageSchemePath) {
+        //     return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
+        //         let document = new UsageReportDocument(uri, translationUsage);
+        //         return document.value;
+        //     });
+        // } else
+        if (uri.path === AnalysisReportProvider.missingSchemePath) {
+            let analysis = new TranslationUsage();
+            try {
+                analysis = await analysis.analyse(extensions, this._translationSets);
+            } catch (e) {
+                console.log(e);
+                return '';
+            }
+            try {
+                const document = new MissingReportDocument(uri, analysis);
                 return document.value;
-            });
-        } else if (uri.path === AnalysisReportProvider.missingSchemePath) {
-            return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
-                let document = new MissingReportDocument(uri, translationUsage);
-                return document.value;
-            });
+            } catch (e) {
+                console.log(e);
+                return '';
+            }
         } else {
             return '';
         }

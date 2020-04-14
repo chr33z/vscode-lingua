@@ -39,7 +39,7 @@ suite('Translation Set', () => {
         const translationSets = await addTranslationSets();
         const translationSet = translationSets.default;
 
-        expect(translationSet.keys.length).to.eq(6);
+        expect(translationSet.keys.length).to.eq(9);
         expect(translationSet.getTranslation('welcome')).to.eq('Welcome to ');
         expect(translationSet.getTranslation('tour.start')).to.eq('Here are some links to help you start:');
         expect(translationSet.getTranslation('some missing translation')).to.be.null;

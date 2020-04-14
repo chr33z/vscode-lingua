@@ -56,9 +56,9 @@ export async function activate(context: vscode.ExtensionContext) {
             updateTranslationSets(settings, translationSets).then(async () => {
                 // Analyse translation usage
 
-                const uriUsed = Uri.parse('lingua:report-used');
-                const docUsed = await workspace.openTextDocument(uriUsed);
-                await window.showTextDocument(docUsed);
+                // const uriUsed = Uri.parse('lingua:report-used');
+                // const docUsed = await workspace.openTextDocument(uriUsed);
+                // await window.showTextDocument(docUsed);
 
                 const uriUnused = Uri.parse('lingua:report-missing');
                 const docUnused = await workspace.openTextDocument(uriUnused);

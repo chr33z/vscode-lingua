@@ -25,7 +25,7 @@ export default class MissingReportDocument {
 
         this._lines.push(`Translation identifiers:`);
         Object.keys(this._translationUsage.totalTranslations).forEach((locale) => {
-            this._lines.push(`\t[${locale}]:\t\t\t\t${this._translationUsage.totalTranslations[locale]}`);
+            this._lines.push(`\t[${locale}]:\t\t\t\t${this._translationUsage.totalTranslations.get(locale)}`);
         });
 
         const totalFiles = this._translationUsage.totalFiles;
@@ -38,6 +38,7 @@ export default class MissingReportDocument {
         this._lines.push(`(Potentially) Missing Translations`);
         this._lines.push(`------------------------------------------------`);
         this._lines.push('');
+
         this.populateMissing();
     }
 
