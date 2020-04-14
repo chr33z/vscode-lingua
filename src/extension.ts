@@ -53,17 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
     /* Analyse translation usage across all files declared in .lingua */
     context.subscriptions.push(
         vscode.commands.registerCommand('lingua.analyse', async () => {
-            updateTranslationSets(settings, translationSets).then(async () => {
-                // Analyse translation usage
-
-                const uriUsed = Uri.parse('lingua:report-used');
-                const docUsed = await workspace.openTextDocument(uriUsed);
-                await window.showTextDocument(docUsed);
-
-                const uriUnused = Uri.parse('lingua:report-missing');
-                const docUnused = await workspace.openTextDocument(uriUnused);
-                return await window.showTextDocument(docUnused);
-            });
+            analyseTranslationUsage();
         })
     );
 
@@ -186,6 +176,14 @@ export async function activate(context: vscode.ExtensionContext) {
         null,
         context.subscriptions
     );
+}
+
+function analyseTranslationUsage() {
+    updateTranslationSets(settings, translationSets).then(async () => {
+        const uriUsed = Uri.parse('lingua:analysis-report');
+        const docUsed = await workspace.openTextDocument(uriUsed);
+        await window.showTextDocument(docUsed);
+    });
 }
 
 export function deactivate() {}

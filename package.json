@@ -132,11 +132,11 @@
                 },
                 "lingua.analysisExtensions": {
                     "type": "string",
-                    "default": "html, ts",
+                    "default": "html,ts",
                     "enum": [
                         "html",
                         "ts",
-                        "html, ts"
+                        "html,ts"
                     ]
                 },
                 "lingua.decoration.maxLookupLength": {

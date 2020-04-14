@@ -1,22 +1,21 @@
 import { Uri, workspace } from 'vscode';
-import { TranslationEntry } from '../translation-entry';
+import { TranslationEntry } from './translation-entry';
 import { TextDecoder } from 'util';
-import { TranslationMatch } from '../translation-match';
+import { TranslationMatch } from './translation-match';
 import { TranslationSets } from '../translation-sets';
 import { findFilesWithExtension as findProjectFiles } from '../../utils';
 
 export class TranslationUsage {
-    // private regex = new RegExp(/\'[a-zA-Z\.\_\-]+\'/g);
     private regex = new RegExp(/['|"|`]([a-zA-Z0-9\.\_\-]+)(\.\$.*)*['|"|`]/g);
 
-    public found: { [path: string]: TranslationEntry } = {};
+    public found: Map<string, TranslationEntry> = new Map();
     public missing: string[] = [];
     public totalFiles: Number = 0;
-    public totalTranslations: { [locale: string]: Number } = {};
+    public totalTranslations: Map<string, number> = new Map();
 
     public async analyse(fileTypes: string[], translationSets: TranslationSets) {
-        console.log('\nAnalysing translation usage...');
-        console.log('---------------------');
+        console.debug('\nAnalysing translation usage...');
+        console.debug('---------------------');
 
         if (!translationSets.default) {
             return Promise.reject();
@@ -24,12 +23,12 @@ export class TranslationUsage {
 
         const uris = await findProjectFiles(fileTypes);
 
-        console.log(`Found ${uris.length} files to scan for translations...\n`);
+        console.debug(`Found ${uris.length} files to scan for translations...\n`);
 
         this.totalFiles = uris.length;
 
         Object.keys(translationSets.get).forEach((locale) => {
-            this.totalTranslations[locale] = translationSets.get[locale].keys.length;
+            this.totalTranslations.set(locale, translationSets.get[locale].keys.length);
         });
 
         /*
@@ -48,20 +47,20 @@ export class TranslationUsage {
 
         this.filterMissing(allIdentifiers);
 
-        console.log(`\nFOUND: ${foundKeys.length} translations`);
+        console.debug(`\nFOUND: ${foundKeys.length} translations`);
         foundKeys.forEach((key) => {
-            console.log(`FOUND: ${key}`);
+            console.debug(`FOUND: ${key}`);
         });
 
-        console.log(`\nMISSING: ${this.missing.length} translations`);
+        console.debug(`\nMISSING: ${this.missing.length} translations`);
         this.missing.forEach((identifier) => {
-            console.log(`MISSING: ${identifier}`);
+            console.debug(`MISSING: ${identifier}`);
         });
 
         return Promise.resolve(this);
     }
 
-    public anaylseDocumentUsage(uri: Uri, text: string, translationSets: TranslationSets) {
+    private anaylseDocumentUsage(uri: Uri, text: string, translationSets: TranslationSets) {
         let match;
         while ((match = this.regex.exec(text))) {
             if (match) {
@@ -75,24 +74,16 @@ export class TranslationUsage {
             if (!match || match.startsWith("'") || match.startsWith('"') || match.startsWith('`')) {
                 return;
             }
-            console.log(match);
             const path = this.preparePath(match);
 
             Object.keys(translationSets.get).forEach((locale) => {
                 let translation: string | null = translationSets.get[locale].getTranslation(path);
                 let isPartialMatch = translationSets.get[locale].isPartialMatch(path);
 
-                // Constructor is a keyword, that cannot be used as a key in dictionaries
-                // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
-                if (path === 'constructor') {
-                    translation = null;
-                }
-
                 if (translation || isPartialMatch) {
                     // check if path was already found in another file
-                    if (this.found[path]) {
-                        // Only update found locations
-                        this.found[path].locations.push({
+                    if (this.found.has(path)) {
+                        this.found.get(path)?.locations.push({
                             uri: uri,
                             line: line,
                         });
@@ -110,7 +101,7 @@ export class TranslationUsage {
                                 },
                             ],
                         });
-                        this.found[path] = newEntry;
+                        this.found.set(path, newEntry);
                     }
                 }
             });
@@ -135,7 +126,7 @@ export class TranslationUsage {
             let identifier = key;
 
             while (identifier) {
-                if (this.found[identifier]) {
+                if (this.found.has(identifier)) {
                     // if the key is found, return
                     return;
                 } else {
