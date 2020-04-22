@@ -37,7 +37,7 @@ Change translations directly in your `html` or `ts` file by opening the context 
 
 ### Go to a translation in your default language file
 
-Select or an identifier or place the cursor in it and open the context menu with right-click. Select `Lingua: Go to translation` to get to the correct location in the default language file.
+Select an identifier or place the cursor in it and open the context menu with right-click. Select `Lingua: Go to translation` to get to the correct location in the default language file.
 
 ### Analysing translation usage
 
