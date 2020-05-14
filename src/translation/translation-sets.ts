@@ -9,6 +9,10 @@ export class TranslationSets {
 
     public uris: { [locale: string]: Uri } = {};
 
+    public get count(): number {
+        return this._translationSets ? Object.keys(this._translationSets).length : 0;
+    }
+
     /**
      * Getter for all translation sets
      */
@@ -24,9 +28,13 @@ export class TranslationSets {
         if (!this._settings || Object.keys(this._translationSets).length === 0) {
             return new TranslationSet();
         }
-        const defaultLanguage = workspace.getConfiguration('lingua').get<string>('defaultLanguage');
-        const defaultLocale = defaultLanguage ? defaultLanguage : Object.keys(this._translationSets)[0];
-        return this._translationSets[defaultLocale];
+        let defaultLanguage = workspace.getConfiguration('lingua').get<string>('defaultLanguage');
+
+        if (!defaultLanguage || !Object.keys(this._translationSets).includes(defaultLanguage)) {
+            defaultLanguage = Object.keys(this._translationSets)[0];
+        }
+
+        return this._translationSets[defaultLanguage];
     }
 
     public async build(settings: LinguaSettings) {
