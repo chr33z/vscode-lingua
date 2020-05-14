@@ -85,7 +85,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 const relativePath = workspace.asRelativePath(languageFileUri.path);
 
                 settings.addTranslationSet(language, relativePath);
-                if (!workspace.getConfiguration('lingua').get('defaultLanguage')) {
+                if (translationSets.count <= 1) {
                     workspace
                         .getConfiguration('lingua')
                         .update('defaultLanguage', language, ConfigurationTarget.Global);
