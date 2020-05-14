@@ -1,3 +1,9 @@
+## [0.7.1]
+
+### Fix
+
+-   Did not change default language correctly and translation decorator did not work
+
 ## [0.7.0]
 
 ### Fix
