@@ -7,9 +7,9 @@
         "email": "chr33z@gmail.com"
     },
     "publisher": "chr33z",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "engines": {
-        "vscode": "^1.39.0"
+        "vscode": "^1.44.0"
     },
     "repository": {
         "type": "git",
