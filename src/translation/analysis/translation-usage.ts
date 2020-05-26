@@ -1,9 +1,9 @@
 import { Uri, workspace } from 'vscode';
-import { TranslationEntry } from './translation-entry';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from './translation-match';
 import { TranslationSets } from '../translation-sets';
 import { findFilesWithExtension as findProjectFiles } from '../../utils';
+import { TranslationEntry } from './translation-entry';
 
 export class TranslationUsage {
     private regex = new RegExp(/['|"|`]([a-zA-Z0-9\.\_\-]+)(\.\$.*)*['|"|`]/g);

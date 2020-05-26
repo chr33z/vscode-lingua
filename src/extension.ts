@@ -57,14 +57,6 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('lingua.findDuplicates', async () => {
-            updateTranslationSets(settings, translationSets).then(async () => {
-                findDuplicates(translationSets.default);
-            });
-        })
-    );
-
     /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async (editor) => {
