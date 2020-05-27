@@ -9,7 +9,8 @@ const jsonSourceMap = require('json-source-map');
 export async function createTranslation(
     translationSets: TranslationSets,
     document: TextDocument,
-    selection: Selection
+    selection: Selection,
+    useFlatTranslationKeys: boolean
 ): Promise<void> {
     const identifierResult = getIdentifierFromSelection(document, selection);
     const isIdentifier = identifierResult.isIdentifier;
@@ -33,7 +34,14 @@ export async function createTranslation(
         const translation = await window.showInputBox({ placeHolder: 'Enter translation...' });
 
         if (translation) {
-            await updateTranslationFile(translationSet.uri, identifier, translation, true)
+            const overwriteTranslation = true;
+            await updateTranslationFile(
+                translationSet.uri,
+                identifier,
+                translation,
+                useFlatTranslationKeys,
+                overwriteTranslation
+            )
                 .then((_) => {
                     return Promise.resolve();
                 })
@@ -88,7 +96,8 @@ export async function locateTranslation(translationSet: TranslationSet, document
 export async function changeTranslation(
     translationSets: TranslationSets,
     document: TextDocument,
-    selection: Selection
+    selection: Selection,
+    useFlatTranslationKeys: boolean
 ) {
     const identifierResult = getIdentifierFromSelection(document, selection);
     const isIdentifier = identifierResult.isIdentifier;
@@ -109,7 +118,14 @@ export async function changeTranslation(
     const newTranslation = await window.showInputBox({ placeHolder: 'Enter new translation...' });
 
     if (newTranslation) {
-        await updateTranslationFile(translationSet.uri, identifier, newTranslation, true)
+        const overwriteTranslation = true;
+        await updateTranslationFile(
+            translationSet.uri,
+            identifier,
+            newTranslation,
+            useFlatTranslationKeys,
+            overwriteTranslation
+        )
             .then((_) => {
                 return Promise.resolve();
             })
@@ -120,7 +136,11 @@ export async function changeTranslation(
     }
 }
 
-export async function convertToTranslation(translationSets: TranslationSets, editor: TextEditor) {
+export async function convertToTranslation(
+    translationSets: TranslationSets,
+    editor: TextEditor,
+    useFlatTranslationKeys: boolean
+) {
     const text = editor.document.getText(editor.selection);
 
     let translationSet = await promtTranslationSet(translationSets);
@@ -142,7 +162,14 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
     if (translationIdentifer) {
         if (isTranslationIdentifier(translationIdentifer)) {
             // add new translation to translation file
-            await updateTranslationFile(translationSet.uri, translationIdentifer, text)
+            const overwriteTranslation = false;
+            await updateTranslationFile(
+                translationSet.uri,
+                translationIdentifer,
+                text,
+                useFlatTranslationKeys,
+                overwriteTranslation
+            )
                 .then(async (_) => {
                     // replace source selection with translation construct
                     const edit = new WorkspaceEdit();
@@ -180,12 +207,13 @@ export async function updateTranslationFile(
     uri: Uri,
     identifier: string,
     translation: string,
-    overwrite: boolean = false
+    useFlatTranslationKeys: boolean,
+    overwrite: boolean
 ) {
     const doc = await workspace.openTextDocument(uri);
     const json = JSON.parse(doc.getText());
 
-    if (addTranslation(json, identifier, translation, overwrite)) {
+    if (addTranslation(json, identifier, translation, useFlatTranslationKeys, overwrite)) {
         const edit = new WorkspaceEdit();
         edit.replace(uri, new Range(0, 0, Number.MAX_VALUE, 0), JSON.stringify(json, null, 2));
         await workspace.applyEdit(edit);
@@ -197,8 +225,14 @@ export async function updateTranslationFile(
     }
 }
 
-function addTranslation(json: any, path: string, translation: string, overwrite: boolean = false): boolean {
-    const segments = path.split('.');
+function addTranslation(
+    json: any,
+    path: string,
+    translation: string,
+    useFlatTranslationKeys: boolean,
+    overwrite: boolean = false
+): boolean {
+    const segments = useFlatTranslationKeys ? [path] : path.split('.');
 
     // check if there is a node with the current segment
     let index = 0;

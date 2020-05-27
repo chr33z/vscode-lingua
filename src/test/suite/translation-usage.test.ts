@@ -27,9 +27,9 @@ suite('Translation Usage', () => {
         await analysis.analyse(['ts', 'html'], translationSets);
 
         expect(analysis.found.size).to.eq(6);
-        expect(analysis.missing.length).to.eq(3);
+        expect(analysis.missing.length).to.eq(4);
         expect(analysis.totalFiles).to.eq(13);
-        expect(analysis.totalTranslations.get('en')).to.eq(9);
+        expect(analysis.totalTranslations.get('en')).to.eq(10);
         expect(analysis.totalTranslations.get('de')).to.eq(5);
     });
 });

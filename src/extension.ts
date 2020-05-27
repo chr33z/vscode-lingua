@@ -90,7 +90,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                createTranslation(translationSets, editor.document, editor.selection);
+                createTranslation(translationSets, editor.document, editor.selection, useFlatTranslationKeys());
             });
         })
     );
@@ -99,7 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                changeTranslation(translationSets, editor.document, editor.selection);
+                changeTranslation(translationSets, editor.document, editor.selection, useFlatTranslationKeys());
             });
         })
     );
@@ -108,7 +108,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                convertToTranslation(translationSets, editor);
+                convertToTranslation(translationSets, editor, useFlatTranslationKeys());
             });
         })
     );
@@ -183,6 +183,10 @@ export function deactivate() {}
 function setExtensionEnabled(enabled: boolean) {
     // https://github.com/Microsoft/vscode/issues/10401#issuecomment-280090759
     commands.executeCommand('setContext', 'lingua:enabled', enabled);
+}
+
+function useFlatTranslationKeys(): boolean {
+    return workspace.getConfiguration('lingua').get<boolean>('flatTranslationKeys', false);
 }
 
 /**
