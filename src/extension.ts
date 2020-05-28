@@ -205,7 +205,7 @@ async function gotoTranslation(
     updateTranslationSets(settings, translationSets).then(() => {
         const defaultTranslation = translationSets.default;
         if (defaultTranslation) {
-            locateTranslation(defaultTranslation, document, selection);
+            locateTranslation(defaultTranslation, document, selection, useFlatTranslationKeys());
         }
     });
 }
@@ -227,13 +227,6 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
         );
         return Promise.reject();
     }
-}
-
-async function findDuplicates(translationSet: TranslationSet) {
-    const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
-    const extensions = extensionSettings.replace(/\s*/, '').split(',');
-    TranslationDuplicates.findDuplicatePathLeaves(translationSet);
-    TranslationDuplicates.findDuplicateTranslations(translationSet);
 }
 
 /**

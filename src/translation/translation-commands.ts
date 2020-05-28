@@ -56,7 +56,12 @@ export async function createTranslation(
     }
 }
 
-export async function locateTranslation(translationSet: TranslationSet, document: TextDocument, selection: Selection) {
+export async function locateTranslation(
+    translationSet: TranslationSet,
+    document: TextDocument,
+    selection: Selection,
+    useFlatTranslationKeys: boolean
+) {
     const identifierResult = getIdentifierFromSelection(document, selection);
     const isIdentifier = identifierResult.isIdentifier;
     const identifier = identifierResult.value;
@@ -81,7 +86,7 @@ export async function locateTranslation(translationSet: TranslationSet, document
     const doc = await workspace.openTextDocument(translationSet.uri);
 
     const sourceMap = jsonSourceMap.parse(doc.getText());
-    const sourceMapPath = `/${identifier.replace(/\./g, '/')}`;
+    const sourceMapPath = useFlatTranslationKeys ? `/${identifier}` : `/${identifier.replace(/\./g, '/')}`;
     const sourcePointer = sourceMap.pointers[sourceMapPath];
     const valueStart = sourcePointer.value;
     const valueEnd = sourcePointer.valueEnd;
