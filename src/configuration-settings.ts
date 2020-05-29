@@ -20,4 +20,8 @@ export class Configuration {
     public static analysisExtension(): string {
         return workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
     }
+
+    public static async setUseFlatTranslationKey(enabled: boolean) {
+        return workspace.getConfiguration('lingua').update('flatTranslationKeys', enabled);
+    }
 }

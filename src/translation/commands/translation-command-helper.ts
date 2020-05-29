@@ -2,7 +2,7 @@ import { TranslationSets } from '../translation-sets';
 import { TranslationSet } from '../translation-set';
 import { window, workspace, WorkspaceEdit, Range, Uri } from 'vscode';
 import { truncateText } from '../translation-utils';
-import { useFlatTranslationKeys } from '../../configuration-settings';
+import { Configuration } from '../../configuration-settings';
 
 export async function promtTranslationSet(translationSets: TranslationSets): Promise<TranslationSet> {
     let translationSet = translationSets.default;
@@ -32,7 +32,7 @@ export async function updateTranslationFile(uri: Uri, identifier: string, transl
 }
 
 function addTranslation(json: any, path: string, translation: string, overwrite: boolean = false): boolean {
-    const segments = useFlatTranslationKeys() ? [path] : path.split('.');
+    const segments = Configuration.useFlatTranslationKeys() ? [path] : path.split('.');
 
     // check if there is a node with the current segment
     let index = 0;

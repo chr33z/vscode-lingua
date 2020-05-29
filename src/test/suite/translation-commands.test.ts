@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { TranslationSets } from '../../translation/translation-sets';
 import { LinguaSettings } from '../../lingua-settings';
 import { updateTranslationFile } from '../../translation/commands/translation-command-helper';
-import { useFlatTranslationKeys } from '../../configuration-settings';
 
 suite('Translation Commands', () => {
     const copyTranslationFile = async function (name: string) {

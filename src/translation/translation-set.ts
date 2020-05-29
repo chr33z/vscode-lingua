@@ -23,7 +23,7 @@ export class TranslationSet {
         return this._partialTranslationPaths.has(path);
     }
 
-    public translationKeyStyle: TranslationKeyStyle = TranslationKeyStyle.Nested;
+    public translationKeyStyle: TranslationKeyStyle = TranslationKeyStyle.Undefined;
 
     public get isEmpty(): boolean {
         return this.keys.length < 1;
@@ -120,20 +120,27 @@ export class TranslationSet {
     }
 
     private determineTranslationKeyStyle(node: object): void {
+        let detectedKeyStyle = this.translationKeyStyle;
+
         if (isArray(node)) {
             const key = node[0] as string;
 
             if (typeof node[1] === 'string') {
                 if (key.includes('.')) {
                     // leaf case with dotted notation -> flt style
-                    this.translationKeyStyle = TranslationKeyStyle.Flat;
+                    detectedKeyStyle = TranslationKeyStyle.Flat;
                 }
             } else {
                 // branch case and previously a flat style detected -> mixed style
-                if (this.translationKeyStyle === TranslationKeyStyle.Flat) {
-                    this.translationKeyStyle = TranslationKeyStyle.Mixed;
-                }
+                detectedKeyStyle = TranslationKeyStyle.Nested;
             }
+        }
+
+        const isKeyStyleUndefined = this.translationKeyStyle === TranslationKeyStyle.Undefined;
+        if (isKeyStyleUndefined) {
+            this.translationKeyStyle = detectedKeyStyle;
+        } else if (this.translationKeyStyle != detectedKeyStyle) {
+            this.translationKeyStyle = TranslationKeyStyle.Mixed;
         }
     }
 }
