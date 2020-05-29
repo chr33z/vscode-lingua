@@ -13,6 +13,7 @@ import { convertToTranslation as commandConvertToTranslation } from './translati
 import { locateTranslation as commandLocateTranslation } from './translation/commands/translation-command-locate';
 import { isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
 import { Configuration } from './configuration-settings';
+import { Notification } from './user-notifications';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -210,11 +211,7 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
     if (settings.translationFiles.length) {
         await translationSets.build(settings);
     } else {
-        window.showWarningMessage(
-            'Lingua: There is no translation file *.json configured for this extension.\n' +
-                'To use it, please navigate to your translation file and set it via the context menu\n' +
-                " or by calling 'lingua:selectLocaleFile'"
-        );
+        Notification.showWarningNoTranslationFile();
         return Promise.reject();
     }
 
@@ -229,26 +226,11 @@ export async function notifyUserTranslationKeyStyle() {
     switch (keyStyle) {
         case TranslationKeyStyle.Flat:
             if (!Configuration.useFlatTranslationKeys()) {
-                await window
-                    .showWarningMessage(
-                        'Lingua: It appears you are using a "flat" translation key style.\n' +
-                            'We suggest you activate the "flat" translation key style option in the settings\n' +
-                            'to be able to use all Lingua commands',
-                        'Change Key Style'
-                    )
-                    .then((action) => {
-                        if (action) {
-                            Configuration.setUseFlatTranslationKey(true);
-                        }
-                    });
+                await Notification.showWarningFlatKeyStyle().then(() => {});
             }
             break;
         case TranslationKeyStyle.Mixed:
-            window.showWarningMessage(
-                'Lingua: It appears your are using "flat" and "nested" translation keys at the same time.\n' +
-                    'At the moment Lingua only supports either "flat" or "nested" translations keys.\n' +
-                    'Please chose the key style of your choice in the settings.'
-            );
+            Notification.showWarningNestedKeyStyle();
             break;
     }
 }
