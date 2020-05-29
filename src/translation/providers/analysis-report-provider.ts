@@ -1,17 +1,16 @@
 import * as vscode from 'vscode';
-import UsageReportDocument from '../documents/usage-report-document';
+import AnalysisReportDocument from '../documents/analysis-report-document';
 import { TranslationSets } from '../translation-sets';
 import { TranslationUsage } from '../analysis/translation-usage';
 import { LinguaSettings } from '../../lingua-settings';
-import MissingReportDocument from '../documents/missing-report-document';
+import { Configuration } from '../../configuration-settings';
 
 export default class AnalysisReportProvider implements vscode.TextDocumentContentProvider, vscode.DocumentLinkProvider {
     static scheme = 'lingua';
-    static usageSchemePath = 'report-usage';
-    static missingSchemePath = 'report-missing';
+    static analysisScheme = 'analysis-report';
 
     private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
-    private _documents = new Map<string, UsageReportDocument>();
+    private _documents = new Map<string, AnalysisReportDocument>();
     private _subscriptions: vscode.Disposable;
 
     constructor(private _linguaSettings: LinguaSettings, private _translationSets: TranslationSets) {
@@ -33,17 +32,12 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
     }
 
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-        const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
-        const extensions = extensionSettings.replace(/\s*/, '').split(',');
+        const extensionSettings = Configuration.analysisExtension();
+        const extensions = extensionSettings.split(',');
 
-        if (uri.path === AnalysisReportProvider.usageSchemePath) {
+        if (uri.path === AnalysisReportProvider.analysisScheme) {
             return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
-                let document = new UsageReportDocument(uri, translationUsage);
-                return document.value;
-            });
-        } else if (uri.path === AnalysisReportProvider.missingSchemePath) {
-            return new TranslationUsage().analyse(extensions, this._translationSets).then((translationUsage) => {
-                let document = new MissingReportDocument(uri, translationUsage);
+                let document = new AnalysisReportDocument(uri, translationUsage);
                 return document.value;
             });
         } else {

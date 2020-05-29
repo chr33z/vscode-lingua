@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { findFilesWithExtension } from '../../utils';
+import { findFilesWithExtension } from '../../extension-utils';
 
 suite('Utils', () => {
     test('find specified files in project', async () => {

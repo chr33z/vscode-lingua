@@ -2,6 +2,7 @@ import { TextEditor, DecorationOptions, Range, window, Position, Uri, workspace 
 import { TranslationSet } from './translation/translation-set';
 import { LinguaSettings } from './lingua-settings';
 import { posix } from 'path';
+import { Configuration } from './configuration-settings';
 
 const translationDecoration = window.createTextEditorDecorationType({
     light: {
@@ -30,7 +31,7 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
         return;
     }
 
-    if (!editor || translationSet.isEmpty()) {
+    if (!editor || translationSet.isEmpty) {
         return;
     }
 
@@ -39,10 +40,8 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
     const translationDecorations: DecorationOptions[] = [];
     const identifierDecorations: DecorationOptions[] = [];
 
-    const maxTranslationLength =
-        workspace.getConfiguration('lingua').get<number>('decoration.maxTranslationLength') || 80;
-    const showInLineTranslation =
-        workspace.getConfiguration('lingua').get<boolean>('decoration.showInlineTranslation') || true;
+    const maxTranslationLength = Configuration.maxTranslationLength();
+    const showInLineTranslation = Configuration.showInlineTranslation();
 
     let match;
     while ((match = regEx.exec(text))) {

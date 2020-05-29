@@ -22,12 +22,12 @@ suite('Translation Set', () => {
 
     test('translation set is emtpy', () => {
         const translationSet = new TranslationSet();
-        expect(translationSet.isEmpty()).to.be.true;
+        expect(translationSet.isEmpty).to.be.true;
     });
 
     test('translation is not emtpy', async () => {
         const translationSets = await addTranslationSets();
-        expect(translationSets.default.isEmpty()).to.be.false;
+        expect(translationSets.default.isEmpty).to.be.false;
     });
 
     test('add translationsets', async () => {
@@ -39,10 +39,16 @@ suite('Translation Set', () => {
         const translationSets = await addTranslationSets();
         const translationSet = translationSets.default;
 
-        expect(translationSet.keys.length).to.eq(6);
         expect(translationSet.getTranslation('welcome')).to.eq('Welcome to ');
         expect(translationSet.getTranslation('tour.start')).to.eq('Here are some links to help you start:');
         expect(translationSet.getTranslation('some missing translation')).to.be.null;
+    });
+
+    test('translation set contains flat translation paths', async () => {
+        const translationSets = await addTranslationSets();
+        const translationSet = translationSets.default;
+
+        expect(translationSet.getTranslation('this.is.a.flat.translation.path')).to.eq('Some Translation');
     });
 
     test('translation set contains partial translation paths', async () => {

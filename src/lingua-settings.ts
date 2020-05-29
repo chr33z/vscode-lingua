@@ -1,5 +1,6 @@
 import { Uri, workspace, window } from 'vscode';
 import { assign } from 'lodash';
+import { Notification } from './user-notifications';
 
 var textEncoding = require('text-encoding');
 var TextEncoder = textEncoding.TextEncoder;
@@ -8,7 +9,12 @@ export class LinguaSettings {
     public translationFiles: { lang: string; uri: string }[] = [];
 
     public async addTranslationSet(language: string, relativePath: string) {
-        this.translationFiles.push({ lang: language, uri: relativePath });
+        const entry = this.translationFiles.find((file) => file.lang === language);
+        if (entry) {
+            entry.uri = relativePath;
+        } else {
+            this.translationFiles.push({ lang: language, uri: relativePath });
+        }
         await writeSettings(this);
     }
 
@@ -41,9 +47,7 @@ async function writeSettings(settings: LinguaSettings) {
         try {
             const uri = Uri.file(`${workspace.rootPath}/.lingua`);
             await workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
-            window.showInformationMessage(
-                'Lingua: Created/Updated the .lingua settings file in your workspace directory'
-            );
+            Notification.showLinguaSettingCreated();
         } catch (e) {
             window.showErrorMessage(e);
         }

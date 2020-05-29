@@ -1,6 +1,7 @@
 import { workspace, Uri, window } from 'vscode';
 import { TranslationSet } from './translation-set';
 import { LinguaSettings } from '../lingua-settings';
+import { Configuration } from '../configuration-settings';
 
 export class TranslationSets {
     private _translationSets: { [locale: string]: TranslationSet } = {};
@@ -28,7 +29,7 @@ export class TranslationSets {
         if (!this._settings || Object.keys(this._translationSets).length === 0) {
             return new TranslationSet();
         }
-        let defaultLanguage = workspace.getConfiguration('lingua').get<string>('defaultLanguage');
+        let defaultLanguage = Configuration.defaultLanguage();
 
         if (!defaultLanguage || !Object.keys(this._translationSets).includes(defaultLanguage)) {
             defaultLanguage = Object.keys(this._translationSets)[0];
@@ -48,7 +49,7 @@ export class TranslationSets {
                         if (document) {
                             const json = document.getText();
                             const translationSet = new TranslationSet();
-                            translationSet.build(absoluteUri, JSON.parse(json));
+                            translationSet.build(localeFile.lang, absoluteUri, JSON.parse(json));
                             this._translationSets[localeFile.lang] = translationSet;
                         }
                     });
