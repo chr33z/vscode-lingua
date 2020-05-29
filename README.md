@@ -8,8 +8,8 @@ Lingua's goals is to help developers creating, and managing translations with ng
 
 -   Create translations directly in your `html` or `ts` file
 -   Change translation directly in your `html` or `ts` file
--   Lookup the translations in your editor
--   Autocomplete translation identifiers in `html`
+-   Inline-Lookup of your translations in the editor
+-   Autocomplete translation keys in `html`
 -   Analyse translation usage (e.g. how many translations, how many unused translations, ...)
 -   Find translations in your language-file
 
@@ -25,19 +25,38 @@ This is done by opening the [language].json file in the editor and selecting rig
 
 ![Lingua autocomplete.](images/example_3.gif)
 
+### Chose your translation key style
+
+Lingua allows for for a 'nested' and a 'flat" translation key style. If Lingua detects you are using a 'flat' key style, you will be promted to change the key style in the Lingua settings. If you are using a 'mixed' style, you will be warned about it, but you can always disable the warning if you like.
+
+```
+// Nested style
+"some": {
+    "translation_1": "Some translation",
+    "translation_2": "Some other translation"
+}
+
+// Flat style
+"some.translation_1": "Some translation",
+"some.translation_2": "Some other translation"
+}
+```
+
+> Note: Mixed styles are currently not allowed as Lingua depends on knowing the hierarchy to be able to manipulate the translation \*.json.
+
 ### Creating new translations
 
-Write an identifier in your code like `'some.identifier'` for which you want to create a translation. Select or the identifier or place the cursor in it and open the context menu with right-click. Select `Lingua: Create translation`. You will be promted to enter a translation for this identifier, following with a promt to select the language for which you want to create this translation for.
+Write a translation key in your code like `'some.key'` for which you want to create a translation. Select the key or place the cursor in it and open the context menu with right-click. Select `Lingua: Create translation`. You will be promted to enter a translation for this translation key, following with a promt to select the language for which you want to create this translation for.
 
 ### Changing translations
 
-Change translations directly in your `html` or `ts` file by opening the context menu, selecting `Lingua: Change translation` and typing in a new translation for the current identifier.
+Change translations directly in your `html` or `ts` file by opening the context menu, selecting `Lingua: Change translation` and typing in a new translation for the current translation key.
 
 ![Lingua changeing translations](images/example_2.gif)
 
 ### Go to a translation in your default language file
 
-Select an identifier or place the cursor in it and open the context menu with right-click. Select `Lingua: Go to translation` to get to the correct location in the default language file.
+Select a translation key or place the cursor on it and open the context menu with right-click. Select `Lingua: Go to translation` to get to the correct location in the default language file.
 
 ### Analysing translation usage
 
@@ -47,14 +66,20 @@ Hit `Ctrl+P` and enter the command `Lingua: analyse translation usage` to calcul
 -   Total amount of partial translations
 -   Ununsed or missing translations (translations that are not used in the project)
 
-> Partial translations are identifiers that are resolved during runtime, e.g. in `'someIdentifier.${parameter}'` the word `someIdentifier` is recognized as a partial path in the translation.
+> Partial translations are translation keys that are resolved during runtime, e.g. in `'some.translation.key.${parameter}'` the key `some.translation.key` is recognized as a partial path in the translation.
+
+### Other Commands
+
+You can execute commands that are not exposed by the GUI by opening the command input (e.g. `Ctrl+P` on Windows) and entering the following commands:
+
+-   `Lingua: selectDefaultLanguage`: This will let you chose the language that is used for inline translation when you have multiple language files defined.
 
 ### Configuration
 
 Most of the Lingua settings are located under the extension settings in vscode.
 
-Lingua also needs at least the location of one language file in order to work. If this file is selected a `.lingua` settings file will be created in the root of the project.
-This file can be shared with collaborators on your project.
+> Lingua also needs at least the location of one language file in order to work. If this file is selected a `.lingua` settings file will be created in the root of the project.
+> This file can be shared with collaborators on your project.
 
 ## Planned features:
 

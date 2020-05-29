@@ -1,3 +1,10 @@
+## [0.8.0]
+
+### New features
+
+-   Users can now chose between a 'nested' and a 'flat' translation key style (see Readme for infos about configuration.)
+-   Added command 'selectDefaultLanguage' to select the default language that is used to show inline translations.
+
 ## [0.7.1]
 
 ### Fix
