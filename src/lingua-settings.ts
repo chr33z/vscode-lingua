@@ -9,7 +9,12 @@ export class LinguaSettings {
     public translationFiles: { lang: string; uri: string }[] = [];
 
     public async addTranslationSet(language: string, relativePath: string) {
-        this.translationFiles.push({ lang: language, uri: relativePath });
+        const entry = this.translationFiles.find((file) => file.lang === language);
+        if (entry) {
+            entry.uri = relativePath;
+        } else {
+            this.translationFiles.push({ lang: language, uri: relativePath });
+        }
         await writeSettings(this);
     }
 
