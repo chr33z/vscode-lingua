@@ -8,10 +8,10 @@ import AnalysisReportProvider from './translation/providers/analysis-report-prov
 import { posix } from 'path';
 import AutoCompleteProvider from './auto-complete';
 import { TranslationKeyStyle } from './translation/translation-key-style';
-import { useFlatTranslationKeys } from './configuration-settings';
 import { createTranslation as commandCreateTranslation } from './translation/commands/translation-command-create';
 import { convertToTranslation as commandConvertToTranslation } from './translation/commands/translation-command-convert';
 import { locateTranslation as commandLocateTranslation } from './translation/commands/translation-command-locate';
+import { isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -32,20 +32,8 @@ export async function activate(context: vscode.ExtensionContext) {
     settings = await readSettings();
     translationSets = new TranslationSets();
 
-    /* Register completion item provider for translations identifiers */
-    let completionProvider = languages.registerCompletionItemProvider(
-        'html',
-        new AutoCompleteProvider(translationSets)
-    );
-    context.subscriptions.push(completionProvider);
-
-    /* Register document provider for translation analysis */
-    const provider = new AnalysisReportProvider(settings, translationSets);
-    const providerRegistrations = Disposable.from(
-        workspace.registerTextDocumentContentProvider(AnalysisReportProvider.scheme, provider),
-        languages.registerDocumentLinkProvider({ scheme: AnalysisReportProvider.scheme }, provider)
-    );
-    context.subscriptions.push(provider, providerRegistrations);
+    registerAutocompleteProvider(context);
+    registerDocumentProvider(context);
 
     /* Analyse translation usage across all files declared in .lingua */
     context.subscriptions.push(
@@ -167,19 +155,28 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 }
 
+export function deactivate() {}
+
+function registerDocumentProvider(context: vscode.ExtensionContext) {
+    const provider = new AnalysisReportProvider(settings, translationSets);
+    const providerRegistrations = Disposable.from(
+        workspace.registerTextDocumentContentProvider(AnalysisReportProvider.scheme, provider),
+        languages.registerDocumentLinkProvider({ scheme: AnalysisReportProvider.scheme }, provider)
+    );
+    context.subscriptions.push(provider, providerRegistrations);
+}
+
+function registerAutocompleteProvider(context: vscode.ExtensionContext) {
+    let provider = languages.registerCompletionItemProvider('html', new AutoCompleteProvider(translationSets));
+    context.subscriptions.push(provider);
+}
+
 function analyseTranslationUsage() {
     updateTranslationSets(settings, translationSets).then(async () => {
         const uriUsed = Uri.parse('lingua:analysis-report');
         const docUsed = await workspace.openTextDocument(uriUsed);
         await window.showTextDocument(docUsed);
     });
-}
-
-export function deactivate() {}
-
-function setExtensionEnabled(enabled: boolean) {
-    // https://github.com/Microsoft/vscode/issues/10401#issuecomment-280090759
-    commands.executeCommand('setContext', 'lingua:enabled', enabled);
 }
 
 /**
@@ -220,15 +217,6 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
         return Promise.reject();
     }
     return Promise.resolve();
-}
-
-/**
- * Check if the current project is a angular project with ngx-translate module
- */
-export async function isNgxTranslateProject(): Promise<boolean> {
-    const isAngular = await workspace.findFiles('**/**/angular.json', `**/node_modules/**`, 1);
-    const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/*ngx-translate*', null, 1);
-    return isAngular.length > 0 && hasNgxTranslateModule.length > 0;
 }
 
 export async function notifyUserTranslationKeyStyle(keyStyle: TranslationKeyStyle) {
