@@ -3,11 +3,10 @@ import { TextDocument, Selection, window } from 'vscode';
 import { getTranslationKeyFromSelection } from '../translation-utils';
 import { promtTranslationSet, updateTranslationFile } from './translation-command-helper';
 
-export async function changeTranslation(
+export async function commandChangeTranslation(
     translationSets: TranslationSets,
     document: TextDocument,
-    selection: Selection,
-    useFlatTranslationKeys: boolean
+    selection: Selection
 ) {
     const { isKey, key } = getTranslationKeyFromSelection(document, selection);
 

@@ -21,7 +21,15 @@ export class Configuration {
         return workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
     }
 
+    public static warnAboutTranslationKeyStyles(): boolean {
+        return workspace.getConfiguration('lingua').get<boolean>('warnAboutFlatAndMixedTranslationKeys', true);
+    }
+
     public static async setUseFlatTranslationKey(enabled: boolean) {
         return workspace.getConfiguration('lingua').update('flatTranslationKeys', enabled);
+    }
+
+    public static async setWarnAboutTranslationKeyStyles(enabled: boolean) {
+        return workspace.getConfiguration('lingua').update('warnAboutFlatAndMixedTranslationKeys', enabled);
     }
 }

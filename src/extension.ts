@@ -14,6 +14,7 @@ import { locateTranslation as commandLocateTranslation } from './translation/com
 import { isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
 import { Configuration } from './configuration-settings';
 import { Notification } from './user-notifications';
+import { commandChangeTranslation } from './translation/commands/translation-command-change';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -86,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                commandCreateTranslation(translationSets, editor.document, editor.selection);
+                commandChangeTranslation(translationSets, editor.document, editor.selection);
             });
         })
     );
