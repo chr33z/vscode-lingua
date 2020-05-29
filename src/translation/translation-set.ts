@@ -12,11 +12,7 @@ export class TranslationSet {
     public uri: Uri = Uri.file('');
 
     public getTranslation(path: string): string | null {
-        if (this._mainTranslationSet[path]) {
-            return this._mainTranslationSet[path];
-        } else {
-            return null;
-        }
+        return this._mainTranslationSet[path] || null;
     }
 
     public isPartialMatch(path: string): boolean {
