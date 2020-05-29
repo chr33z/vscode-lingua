@@ -1,4 +1,4 @@
-import { workspace } from 'vscode';
+import { workspace, ConfigurationTarget } from 'vscode';
 
 export class Configuration {
     public static useFlatTranslationKeys(): boolean {
@@ -31,5 +31,9 @@ export class Configuration {
 
     public static async setWarnAboutTranslationKeyStyles(enabled: boolean) {
         return workspace.getConfiguration('lingua').update('warnAboutFlatAndMixedTranslationKeys', enabled);
+    }
+
+    public static async setDefaultLanguage(language: string) {
+        workspace.getConfiguration('lingua').update('defaultLanguage', language);
     }
 }

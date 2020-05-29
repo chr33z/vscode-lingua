@@ -11,6 +11,8 @@ export class TranslationSet {
 
     public uri: Uri = Uri.file('');
 
+    public identifier: string = '';
+
     public getTranslation(path: string): string | null {
         return this._mainTranslationSet[path] || null;
     }
@@ -29,7 +31,8 @@ export class TranslationSet {
         return Object.keys(this._mainTranslationSet);
     }
 
-    public async build(uri: Uri, translationJson: object) {
+    public async build(identifier: string, uri: Uri, translationJson: object) {
+        this.identifier = identifier;
         this.uri = uri;
 
         let translationEntries = 0;

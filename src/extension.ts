@@ -15,6 +15,7 @@ import { isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
 import { Configuration } from './configuration-settings';
 import { Notification } from './user-notifications';
 import { commandChangeTranslation } from './translation/commands/translation-command-change';
+import { commandSelectDefaultLanguage } from './translation/commands/translation-command-select-language';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -98,6 +99,13 @@ export async function activate(context: vscode.ExtensionContext) {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandConvertToTranslation(translationSets, editor);
             });
+        })
+    );
+
+    /* Select the default language */
+    context.subscriptions.push(
+        vscode.commands.registerCommand('lingua.selectDefaultLanguage', () => {
+            commandSelectDefaultLanguage(translationSets);
         })
     );
 

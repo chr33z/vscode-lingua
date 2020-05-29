@@ -58,6 +58,10 @@
             {
                 "command": "lingua.convertToTranslation",
                 "title": "Lingua: Convert text to translation"
+            },
+            {
+                "command": "lingua.selectDefaultLanguage",
+                "title": "Lingua: Select your default language"
             }
         ],
         "menus": {

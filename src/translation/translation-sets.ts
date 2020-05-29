@@ -49,7 +49,7 @@ export class TranslationSets {
                         if (document) {
                             const json = document.getText();
                             const translationSet = new TranslationSet();
-                            translationSet.build(absoluteUri, JSON.parse(json));
+                            translationSet.build(localeFile.lang, absoluteUri, JSON.parse(json));
                             this._translationSets[localeFile.lang] = translationSet;
                         }
                     });
