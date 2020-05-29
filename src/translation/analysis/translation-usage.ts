@@ -2,7 +2,7 @@ import { Uri, workspace } from 'vscode';
 import { TextDecoder } from 'util';
 import { TranslationMatch } from './translation-match';
 import { TranslationSets } from '../translation-sets';
-import { findFilesWithExtension as findProjectFiles } from '../../utils';
+import { findFilesWithExtension as findProjectFiles } from '../../extension-utils';
 import { TranslationEntry } from './translation-entry';
 
 export class TranslationUsage {

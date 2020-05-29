@@ -2,19 +2,19 @@ import { TextDocument, Selection, Range, Position } from 'vscode';
 
 const validIdentiferCharacters = /^[a-zA-Z0-9\.\_\-]+$/;
 
-export function getIdentifierFromSelection(
+export function getTranslationKeyFromSelection(
     document: TextDocument,
     selection: Selection
-): { value: string; isIdentifier: boolean } {
+): { key: string; isKey: boolean } {
     let range = selectTranslationPath(document, selection);
 
-    let identifier = document.getText(range);
-    identifier = identifier.trim().replace(/['|"|`]/g, '');
+    let keyString = document.getText(range);
+    keyString = keyString.trim().replace(/['|"|`]/g, '');
 
-    if (!isTranslationIdentifier(identifier)) {
-        return { value: identifier, isIdentifier: false };
+    if (!isTranslationIdentifier(keyString)) {
+        return { key: keyString, isKey: false };
     } else {
-        return { value: identifier, isIdentifier: true };
+        return { key: keyString, isKey: true };
     }
 }
 

@@ -3,6 +3,7 @@ import AnalysisReportDocument from '../documents/analysis-report-document';
 import { TranslationSets } from '../translation-sets';
 import { TranslationUsage } from '../analysis/translation-usage';
 import { LinguaSettings } from '../../lingua-settings';
+import { Configuration } from '../../configuration-settings';
 
 export default class AnalysisReportProvider implements vscode.TextDocumentContentProvider, vscode.DocumentLinkProvider {
     static scheme = 'lingua';
@@ -31,7 +32,7 @@ export default class AnalysisReportProvider implements vscode.TextDocumentConten
     }
 
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-        const extensionSettings = vscode.workspace.getConfiguration('lingua').get<string>('analysisExtensions') || '';
+        const extensionSettings = Configuration.analysisExtension();
         const extensions = extensionSettings.split(',');
 
         if (uri.path === AnalysisReportProvider.analysisScheme) {

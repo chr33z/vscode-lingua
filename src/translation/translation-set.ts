@@ -1,28 +1,27 @@
 import { isArray } from 'util';
 import { Uri } from 'vscode';
+import { TranslationKeyStyle } from './translation-key-style';
 
 export class TranslationSet {
-    /// A dictionary with a translation path as the key and the translation as its value
+    // A dictionary with a translation path as the key and the translation as its value
     private _mainTranslationSet: { [path: string]: string } = {};
 
-    /// A set with partial translations paths to check against
+    // A set with partial translations paths to check against
     private _partialTranslationPaths: Set<string> = new Set();
 
     public uri: Uri = Uri.file('');
 
     public getTranslation(path: string): string | null {
-        if (this._mainTranslationSet[path]) {
-            return this._mainTranslationSet[path];
-        } else {
-            return null;
-        }
+        return this._mainTranslationSet[path] || null;
     }
 
     public isPartialMatch(path: string): boolean {
         return this._partialTranslationPaths.has(path);
     }
 
-    public isEmpty(): boolean {
+    public translationKeyStyle: TranslationKeyStyle = TranslationKeyStyle.Undefined;
+
+    public get isEmpty(): boolean {
         return this.keys.length < 1;
     }
 
@@ -30,32 +29,21 @@ export class TranslationSet {
         return Object.keys(this._mainTranslationSet);
     }
 
-    public async build(uri: Uri, languageDefinition: object) {
-        console.debug(`\nScanning for translation entries...`);
-        console.debug('---------------------');
-
-        console.debug('Building main translation set...');
+    public async build(uri: Uri, translationJson: object) {
         this.uri = uri;
 
         let translationEntries = 0;
 
-        Object.entries(languageDefinition).forEach((entries) => {
-            const paths = this.buildMainTranslationSet(entries);
+        Object.entries(translationJson).forEach((entries) => {
+            this.determineTranslationKeyStyle(entries);
 
+            const paths = this.buildMainTranslationSet(entries);
             paths.forEach((item) => {
                 this._mainTranslationSet[item.path] = item.translation;
                 translationEntries++;
             });
         });
-        console.debug('Building main translation set... done');
-
-        console.debug('Building secondary translation set...');
         this.buildpartialTranslationSet();
-        console.debug('Building secondary translation set... done');
-
-        console.debug('---------------------');
-        console.debug(`Found ${translationEntries} translation entries...`);
-        console.debug(`Found ${this._partialTranslationPaths.size} partial translation paths...\n`);
     }
 
     private buildMainTranslationSet(node: object): { path: string; translation: string }[] {
@@ -125,5 +113,30 @@ export class TranslationSet {
                 this._partialTranslationPaths.add(partialPath);
             }
         });
+    }
+
+    private determineTranslationKeyStyle(node: object): void {
+        let detectedKeyStyle = this.translationKeyStyle;
+
+        if (isArray(node)) {
+            const key = node[0] as string;
+
+            if (typeof node[1] === 'string') {
+                if (key.includes('.')) {
+                    // leaf case with dotted notation -> flt style
+                    detectedKeyStyle = TranslationKeyStyle.Flat;
+                }
+            } else {
+                // branch case and previously a flat style detected -> mixed style
+                detectedKeyStyle = TranslationKeyStyle.Nested;
+            }
+        }
+
+        const isKeyStyleUndefined = this.translationKeyStyle === TranslationKeyStyle.Undefined;
+        if (isKeyStyleUndefined) {
+            this.translationKeyStyle = detectedKeyStyle;
+        } else if (this.translationKeyStyle != detectedKeyStyle) {
+            this.translationKeyStyle = TranslationKeyStyle.Mixed;
+        }
     }
 }

@@ -150,6 +150,16 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Enable or disable the inline translation."
+                },
+                "lingua.flatTranslationKeys": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable if you are using a flat translation key hierarchy in your json, e.g. 'this.is.a.flat.translation.key'"
+                },
+                "lingua.warnAboutFlatAndMixedTranslationKeys": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Should Lingua warn you about flat or mixed translation key styles?"
                 }
             }
         }
