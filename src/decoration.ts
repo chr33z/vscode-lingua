@@ -30,7 +30,7 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
         return;
     }
 
-    if (!editor || translationSet.isEmpty()) {
+    if (!editor || translationSet.isEmpty) {
         return;
     }
 

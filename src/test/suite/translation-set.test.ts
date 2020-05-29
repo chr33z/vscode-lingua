@@ -22,12 +22,12 @@ suite('Translation Set', () => {
 
     test('translation set is emtpy', () => {
         const translationSet = new TranslationSet();
-        expect(translationSet.isEmpty()).to.be.true;
+        expect(translationSet.isEmpty).to.be.true;
     });
 
     test('translation is not emtpy', async () => {
         const translationSets = await addTranslationSets();
-        expect(translationSets.default.isEmpty()).to.be.false;
+        expect(translationSets.default.isEmpty).to.be.false;
     });
 
     test('add translationsets', async () => {

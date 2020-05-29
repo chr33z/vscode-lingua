@@ -2,19 +2,16 @@ import * as vscode from 'vscode';
 import { workspace, languages, Disposable, window, Uri, TextDocument, commands, ConfigurationTarget } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
-import {
-    createTranslation,
-    locateTranslation,
-    changeTranslation,
-    convertToTranslation,
-} from './translation/translation-commands';
 import { updateTranslationDecorations } from './decoration';
 import { readSettings } from './lingua-settings';
 import AnalysisReportProvider from './translation/providers/analysis-report-provider';
 import { posix } from 'path';
 import AutoCompleteProvider from './auto-complete';
-import { TranslationSet } from './translation/translation-set';
-import { TranslationDuplicates } from './translation/analysis/translation-duplicates';
+import { TranslationKeyStyle } from './translation/translation-key-style';
+import { useFlatTranslationKeys } from './configuration-settings';
+import { createTranslation as commandCreateTranslation } from './translation/commands/translation-command-create';
+import { convertToTranslation as commandConvertToTranslation } from './translation/commands/translation-command-convert';
+import { locateTranslation as commandLocateTranslation } from './translation/commands/translation-command-locate';
 
 let settings: LinguaSettings;
 let translationSets: TranslationSets;
@@ -90,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                createTranslation(translationSets, editor.document, editor.selection, useFlatTranslationKeys());
+                commandCreateTranslation(translationSets, editor.document, editor.selection);
             });
         })
     );
@@ -99,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                changeTranslation(translationSets, editor.document, editor.selection, useFlatTranslationKeys());
+                commandCreateTranslation(translationSets, editor.document, editor.selection);
             });
         })
     );
@@ -108,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor) => {
             updateTranslationSets(settings, translationSets).then(() => {
-                convertToTranslation(translationSets, editor, useFlatTranslationKeys());
+                commandConvertToTranslation(translationSets, editor);
             });
         })
     );
@@ -185,10 +182,6 @@ function setExtensionEnabled(enabled: boolean) {
     commands.executeCommand('setContext', 'lingua:enabled', enabled);
 }
 
-function useFlatTranslationKeys(): boolean {
-    return workspace.getConfiguration('lingua').get<boolean>('flatTranslationKeys', false);
-}
-
 /**
  * Go to a existing translation or partial translation using a translation identifert
  * @param settings
@@ -205,7 +198,7 @@ async function gotoTranslation(
     updateTranslationSets(settings, translationSets).then(() => {
         const defaultTranslation = translationSets.default;
         if (defaultTranslation) {
-            locateTranslation(defaultTranslation, document, selection, useFlatTranslationKeys());
+            commandLocateTranslation(defaultTranslation, document, selection);
         }
     });
 }
@@ -218,7 +211,6 @@ async function gotoTranslation(
 async function updateTranslationSets(settings: LinguaSettings, translationSets: TranslationSets): Promise<void> {
     if (settings.translationFiles.length) {
         await translationSets.build(settings);
-        return Promise.resolve();
     } else {
         window.showWarningMessage(
             'Lingua: There is no translation file *.json configured for this extension.\n' +
@@ -227,6 +219,7 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
         );
         return Promise.reject();
     }
+    return Promise.resolve();
 }
 
 /**
@@ -236,4 +229,25 @@ export async function isNgxTranslateProject(): Promise<boolean> {
     const isAngular = await workspace.findFiles('**/**/angular.json', `**/node_modules/**`, 1);
     const hasNgxTranslateModule = await workspace.findFiles('**/node_modules/**/*ngx-translate*', null, 1);
     return isAngular.length > 0 && hasNgxTranslateModule.length > 0;
+}
+
+export async function notifyUserTranslationKeyStyle(keyStyle: TranslationKeyStyle) {
+    switch (keyStyle) {
+        case TranslationKeyStyle.Flat:
+            if (!useFlatTranslationKeys()) {
+                window.showWarningMessage(
+                    'Lingua: You are using a flat translation key style.\n' +
+                        'To use it, please navigate to your translation file and set it via the context menu\n' +
+                        " or by calling 'lingua:selectLocaleFile'"
+                );
+            }
+            break;
+        case TranslationKeyStyle.Flat:
+            window.showWarningMessage(
+                'Lingua: You are using either a .\n' +
+                    'To use it, please navigate to your translation file and set it via the context menu\n' +
+                    " or by calling 'lingua:selectLocaleFile'"
+            );
+            break;
+    }
 }

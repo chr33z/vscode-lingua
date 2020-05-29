@@ -1,8 +1,9 @@
 import { expect } from 'chai';
-import { updateTranslationFile } from '../../translation/translation-commands';
 import * as vscode from 'vscode';
 import { TranslationSets } from '../../translation/translation-sets';
 import { LinguaSettings } from '../../lingua-settings';
+import { updateTranslationFile } from '../../translation/commands/translation-command-helper';
+import { useFlatTranslationKeys } from '../../configuration-settings';
 
 suite('Translation Commands', () => {
     const copyTranslationFile = async function (name: string) {
@@ -27,31 +28,35 @@ suite('Translation Commands', () => {
         return translationSets;
     };
 
+    const setFlatTranslationKey = async function (enabled: boolean) {
+        return vscode.workspace.getConfiguration('lingua').update('flatTranslationKeys', enabled);
+    };
+
     test('update translation file with hierchical translation keys', async () => {
         const hierarchicalTranslationFile = await copyTranslationFile('en.json');
-        const flatKeys = false;
+        await setFlatTranslationKey(false);
 
         // should not replace
         try {
-            await updateTranslationFile(hierarchicalTranslationFile, 'welcome', 'Text', flatKeys, false);
+            await updateTranslationFile(hierarchicalTranslationFile, 'welcome', 'Text', false);
         } catch (e) {}
 
         // should not replace
         try {
-            await updateTranslationFile(hierarchicalTranslationFile, 'tour.title', 'Text', flatKeys, false).catch();
+            await updateTranslationFile(hierarchicalTranslationFile, 'tour.title', 'Text', false).catch();
         } catch (e) {}
 
         // should replace
-        await updateTranslationFile(hierarchicalTranslationFile, 'hello', 'Text', flatKeys, true);
+        await updateTranslationFile(hierarchicalTranslationFile, 'hello', 'Text', true);
 
         // should add
-        await updateTranslationFile(hierarchicalTranslationFile, 'some.new.identifier', 'Text', flatKeys, false);
+        await updateTranslationFile(hierarchicalTranslationFile, 'some.new.identifier', 'Text', false);
 
         // should append
-        await updateTranslationFile(hierarchicalTranslationFile, 'tour.appended', 'Text', flatKeys, false);
+        await updateTranslationFile(hierarchicalTranslationFile, 'tour.appended', 'Text', false);
 
         // should replace
-        await updateTranslationFile(hierarchicalTranslationFile, 'tour.start', 'Text', flatKeys, true);
+        await updateTranslationFile(hierarchicalTranslationFile, 'tour.start', 'Text', true);
 
         vscode.workspace.saveAll();
 
@@ -72,29 +77,29 @@ suite('Translation Commands', () => {
 
     test('update translation file with flat translation keys', async () => {
         const flatTranslationFile = await copyTranslationFile('en_flat.json');
-        const flatKeys = true;
+        await setFlatTranslationKey(true);
 
         // should not replace
         try {
-            await updateTranslationFile(flatTranslationFile, 'welcome', 'Text', flatKeys, false);
+            await updateTranslationFile(flatTranslationFile, 'welcome', 'Text', false);
         } catch (e) {}
 
         // should not replace
         try {
-            await updateTranslationFile(flatTranslationFile, 'tour.title', 'Text', flatKeys, false).catch();
+            await updateTranslationFile(flatTranslationFile, 'tour.title', 'Text', false).catch();
         } catch (e) {}
 
         // should replace
-        await updateTranslationFile(flatTranslationFile, 'hello', 'Text', flatKeys, true);
+        await updateTranslationFile(flatTranslationFile, 'hello', 'Text', true);
 
         // should add
-        await updateTranslationFile(flatTranslationFile, 'some.new.identifier', 'Text', flatKeys, false);
+        await updateTranslationFile(flatTranslationFile, 'some.new.identifier', 'Text', false);
 
         // should append
-        await updateTranslationFile(flatTranslationFile, 'tour.appended', 'Text', flatKeys, false);
+        await updateTranslationFile(flatTranslationFile, 'tour.appended', 'Text', false);
 
         // should replace
-        await updateTranslationFile(flatTranslationFile, 'tour.start', 'Text', flatKeys, true);
+        await updateTranslationFile(flatTranslationFile, 'tour.start', 'Text', true);
 
         vscode.workspace.saveAll();
 
