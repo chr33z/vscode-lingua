@@ -1,3 +1,10 @@
+## [0.8.1]
+
+### Fix
+
+-   Removed the "always-on" feature for the inline translation settings. The setting now works as expected.
+-   Maximum Lookup Length settings now works as expected.
+
 ## [0.8.0]
 
 ### New features
