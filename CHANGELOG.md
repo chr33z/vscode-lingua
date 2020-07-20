@@ -1,3 +1,9 @@
+## [0.8.2]
+
+### Fix
+
+-   Bump lodash dependency
+
 ## [0.8.1]
 
 ### Fix
