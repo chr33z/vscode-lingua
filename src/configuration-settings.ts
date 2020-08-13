@@ -6,11 +6,11 @@ export class Configuration {
     }
 
     public static maxTranslationLength(defaultLength: number = 80): number {
-        return workspace.getConfiguration('lingua').get<number>('decoration.maxTranslationLength') || defaultLength;
+        return workspace.getConfiguration('lingua').get<number>('decoration.maxLookupLength', defaultLength);
     }
 
     public static showInlineTranslation(defaultShow: boolean = true): boolean {
-        return workspace.getConfiguration('lingua').get<boolean>('decoration.showInlineTranslation') || defaultShow;
+        return workspace.getConfiguration('lingua').get<boolean>('decoration.showInlineTranslation', defaultShow);
     }
 
     public static defaultLanguage(): string | undefined {
