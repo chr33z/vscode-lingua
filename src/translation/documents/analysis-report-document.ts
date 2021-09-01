@@ -13,7 +13,7 @@ export default class AnalysisReportDocument {
         // Start with printing a header and start resolving
         this._lines = [`Translation Analysis Report`, `------------------------------------------------`];
         this._lines.push('Looking for direct matches of the translation path but also partial matches');
-        this._lines.push('that might be a valida translation, but can only be determined at runtime.');
+        this._lines.push('that might be a valid translation, but can only be determined at runtime.');
         this._lines.push('');
 
         this._lines.push('Summary');
@@ -29,7 +29,7 @@ export default class AnalysisReportDocument {
         this._lines.push('Contents');
         this._lines.push(`------------------------------------------------`);
         this._lines.push(`(#1) Direct Translation Matches: (${this.foundCount})`);
-        this._lines.push(`(#2) Partial Translation Matches: (${this.foundCount})`);
+        this._lines.push(`(#2) Partial Translation Matches: (${this.partialCount})`);
         this._lines.push(`(#3) Missing: (${this.missingCount})`);
 
         this._lines.push('');
@@ -40,7 +40,7 @@ export default class AnalysisReportDocument {
         this.populateMatches();
 
         this._lines.push('');
-        this._lines.push(`(#2) Partial Translation Matches: (${this.foundCount})`);
+        this._lines.push(`(#2) Partial Translation Matches: (${this.partialCount})`);
         this._lines.push(`------------------------------------------------`);
         this._lines.push('');
         this.populatePartialMatches();
