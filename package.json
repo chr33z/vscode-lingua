@@ -1,6 +1,6 @@
 {
     "name": "lingua-vscode",
-    "displayName": "Lingua - Managing nxg-translations",
+    "displayName": "Lingua - Managing ngx-translations",
     "description": "An extension for managing angular translations created with ngx-translate",
     "author": {
         "name": "Christopher Gebhardt",

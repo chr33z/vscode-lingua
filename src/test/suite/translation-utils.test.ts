@@ -46,8 +46,8 @@ suite('Translation Utils', () => {
         expect(isTranslationIdentifier('some.path')).to.be.true;
         expect(isTranslationIdentifier('some.path.THAT.IS.CORRECT')).to.be.true;
         expect(isTranslationIdentifier('s_ome.pa-th.THAT.IS.C-_ORRECT')).to.be.true;
+        expect(isTranslationIdentifier('hello world')).to.be.true;
 
         expect(isTranslationIdentifier('!§/(!"§!_')).to.be.false;
-        expect(isTranslationIdentifier('hello world')).to.be.false;
     });
 });

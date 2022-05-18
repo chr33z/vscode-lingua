@@ -1,4 +1,4 @@
-# Lingua: Managing nxg-translations
+# Lingua: Managing ngx-translations
 
 Lingua - a Visual Studio Code extension to help managing translations for [ngx-translate](https://github.com/ngx-translate/core) - a internationalization (i18n) library for Angular.
 
