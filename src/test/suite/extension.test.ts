@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 
-import * as lingua from '../../extension';
 import { isNgxTranslateProject } from '../../extension-utils';
 
 suite('Extension', () => {

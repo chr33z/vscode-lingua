@@ -1,6 +1,6 @@
 import { TextDocument, Selection, Range, Position } from 'vscode';
 
-const validIdentiferCharacters = /^[a-zA-Z0-9\.\_\-]+$/;
+const validIdentiferCharacters = /^[a-zA-Z0-9\.\s\_\-]+$/;
 
 export function getTranslationKeyFromSelection(
     document: TextDocument,

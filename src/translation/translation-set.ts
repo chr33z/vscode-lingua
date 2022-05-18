@@ -138,7 +138,7 @@ export class TranslationSet {
         const isKeyStyleUndefined = this.translationKeyStyle === TranslationKeyStyle.Undefined;
         if (isKeyStyleUndefined) {
             this.translationKeyStyle = detectedKeyStyle;
-        } else if (this.translationKeyStyle != detectedKeyStyle) {
+        } else if (this.translationKeyStyle !== detectedKeyStyle) {
             this.translationKeyStyle = TranslationKeyStyle.Mixed;
         }
     }
