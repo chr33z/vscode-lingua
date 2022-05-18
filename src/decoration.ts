@@ -53,7 +53,7 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
 
         const translation = translationSet.getTranslation(path);
         const isPartialTranslation = translationSet.isPartialMatch(path);
-        const startPos = editor.document.positionAt(match.index + 1);
+        const startPos = editor.document.positionAt(match.index);
         const endPos = editor.document.positionAt(match.index + match[0].length);
         const n = maxTranslationLength;
 
