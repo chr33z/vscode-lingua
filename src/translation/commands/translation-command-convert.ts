@@ -2,6 +2,7 @@ import { TranslationSets } from '../translation-sets';
 import { TextEditor, window, WorkspaceEdit, workspace } from 'vscode';
 import { promtTranslationSet, updateTranslationFile } from './translation-command-helper';
 import { truncateText, isTranslationIdentifier } from '../translation-utils';
+import { Configuration } from '../../configuration-settings';
 
 export async function convertToTranslation(translationSets: TranslationSets, editor: TextEditor) {
     const text = editor.document.getText(editor.selection);
@@ -26,7 +27,8 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
         if (isTranslationIdentifier(translationKey)) {
             // add new translation to translation file
             const overwriteTranslation = false;
-            await updateTranslationFile(translationSet.uri, translationKey, text, overwriteTranslation)
+            const jsonIndentation = Configuration.jsonIndentation();
+            await updateTranslationFile(translationSet.uri, translationKey, text, overwriteTranslation, jsonIndentation)
                 .then(async (_) => {
                     // replace source selection with translation construct
                     const edit = new WorkspaceEdit();

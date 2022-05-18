@@ -2,11 +2,13 @@ import { TranslationSets } from '../translation-sets';
 import { TextDocument, Selection, window } from 'vscode';
 import { getTranslationKeyFromSelection } from '../translation-utils';
 import { promtTranslationSet, updateTranslationFile } from './translation-command-helper';
+import { Configuration } from '../../configuration-settings';
 
 export async function commandChangeTranslation(
     translationSets: TranslationSets,
     document: TextDocument,
-    selection: Selection
+    selection: Selection,
+
 ) {
     const { isKey, key } = getTranslationKeyFromSelection(document, selection);
 
@@ -26,7 +28,8 @@ export async function commandChangeTranslation(
 
     if (newTranslation) {
         const overwriteTranslation = true;
-        await updateTranslationFile(translationSet.uri, key, newTranslation, overwriteTranslation)
+        const jsonIndentation = Configuration.jsonIndentation();
+        await updateTranslationFile(translationSet.uri, key, newTranslation, overwriteTranslation, jsonIndentation)
             .then((_) => {
                 return Promise.resolve();
             })

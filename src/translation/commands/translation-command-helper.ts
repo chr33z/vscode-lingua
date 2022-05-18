@@ -15,13 +15,13 @@ export async function promtTranslationSet(translationSets: TranslationSets): Pro
     return Promise.resolve(translationSet);
 }
 
-export async function updateTranslationFile(uri: Uri, identifier: string, translation: string, overwrite: boolean) {
+export async function updateTranslationFile(uri: Uri, identifier: string, translation: string, overwrite: boolean, indentation: number = 2) {
     const doc = await workspace.openTextDocument(uri);
     const json = JSON.parse(doc.getText());
 
     if (addTranslation(json, identifier, translation, overwrite)) {
         const edit = new WorkspaceEdit();
-        edit.replace(uri, new Range(0, 0, Number.MAX_VALUE, 0), JSON.stringify(json, null, 2));
+        edit.replace(uri, new Range(0, 0, Number.MAX_VALUE, 0), JSON.stringify(json, null, indentation));
         await workspace.applyEdit(edit);
 
         window.showInformationMessage(`Lingua: Added translation for ${truncateText(translation, 20)}`);
