@@ -36,4 +36,8 @@ export class Configuration {
     public static async setDefaultLanguage(language: string) {
         workspace.getConfiguration('lingua').update('defaultLanguage', language);
     }
+
+    public static jsonIndentation(): number {
+        return workspace.getConfiguration('lingua').get<number>('jsonIndentation', 2);
+    }
 }

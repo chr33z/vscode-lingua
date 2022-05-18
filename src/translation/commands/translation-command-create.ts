@@ -2,6 +2,7 @@ import { window, TextDocument, Selection } from 'vscode';
 import { promtTranslationSet, updateTranslationFile } from './translation-command-helper';
 import { TranslationSets } from '../translation-sets';
 import { getTranslationKeyFromSelection } from '../translation-utils';
+import { Configuration } from '../../configuration-settings';
 
 export async function createTranslation(
     translationSets: TranslationSets,
@@ -29,7 +30,8 @@ export async function createTranslation(
 
         if (translation) {
             const overwriteTranslation = true;
-            await updateTranslationFile(translationSet.uri, key, translation, overwriteTranslation)
+            const jsonIndentation = Configuration.jsonIndentation();
+            await updateTranslationFile(translationSet.uri, key, translation, overwriteTranslation, jsonIndentation)
                 .then((_) => {
                     return Promise.resolve();
                 })
