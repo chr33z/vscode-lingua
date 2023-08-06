@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { workspace, languages, Disposable, window, Uri, TextDocument, commands, ConfigurationTarget } from 'vscode';
+import { workspace, languages, Disposable, window, Uri, TextDocument, TextEditor, ConfigurationTarget, TextDocumentChangeEvent, Event } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
 import { updateTranslationDecorations } from './decoration';
@@ -11,7 +11,7 @@ import { TranslationKeyStyle } from './translation/translation-key-style';
 import { createTranslation as commandCreateTranslation } from './translation/commands/translation-command-create';
 import { convertToTranslation as commandConvertToTranslation } from './translation/commands/translation-command-convert';
 import { locateTranslation as commandLocateTranslation } from './translation/commands/translation-command-locate';
-import { isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
+import { findTranslationFiles, isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
 import { Configuration } from './configuration-settings';
 import { Notification } from './user-notifications';
 import { commandChangeTranslation } from './translation/commands/translation-command-change';
@@ -61,19 +61,16 @@ export async function activate(context: vscode.ExtensionContext) {
             const language = await window.showInputBox({
                 placeHolder: "Enter a language identifier of this file (e.g. 'de' or 'en')",
             });
-            if (language) {
-                // TODO: fix this uri madness
-                const relativePath = workspace.asRelativePath(languageFileUri.path);
-
-                settings.addTranslationSet(language, relativePath);
-                if (translationSets.count <= 1) {
-                    workspace
-                        .getConfiguration('lingua')
-                        .update('defaultLanguage', language, ConfigurationTarget.Global);
-                }
+            await settings.addTranslationSet(language, languageFileUri);
+            if (translationSets.count <= 1) {
+                workspace
+                    .getConfiguration('lingua')
+                    .update('defaultLanguage', language, ConfigurationTarget.Global);
             }
         })
     );
+
+
 
     /* Create a translation for the selected translation identifier */
     context.subscriptions.push(
@@ -166,7 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 function registerDocumentProvider(context: vscode.ExtensionContext) {
     const provider = new AnalysisReportProvider(settings, translationSets);
@@ -220,7 +217,14 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
     if (settings.translationFiles.length) {
         await translationSets.build(settings);
     } else {
-        Notification.showWarningNoTranslationFile();
+        const translationFileMap = await findTranslationFiles();
+        const configureAutomatically = await Notification.showInfoNoTranslationFile(translationFileMap);
+        if (configureAutomatically) {
+            translationFileMap?.forEach((fileUri, language) => {
+                settings.addTranslationSet(language, fileUri);
+            });
+        }
+
         return Promise.reject();
     }
 
@@ -235,7 +239,7 @@ export async function notifyUserTranslationKeyStyle() {
     switch (keyStyle) {
         case TranslationKeyStyle.Flat:
             if (!Configuration.useFlatTranslationKeys()) {
-                await Notification.showWarningFlatKeyStyle().then(() => {});
+                await Notification.showWarningFlatKeyStyle().then(() => { });
             }
             break;
         case TranslationKeyStyle.Mixed:

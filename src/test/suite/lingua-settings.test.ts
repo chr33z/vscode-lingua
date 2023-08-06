@@ -29,7 +29,7 @@ suite('Lingua Settings', () => {
         await deleteLinguaSettings();
 
         let settings: LinguaSettings = await readSettings();
-        await settings.addTranslationSet('test', '');
+        await settings.addTranslationSet('test', vscode.Uri.parse(""));
         settings = await readSettings();
 
         expect(Object.keys(settings.translationFiles).length).to.eq(1);

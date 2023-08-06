@@ -1,13 +1,29 @@
-import { window } from 'vscode';
+import { window, Uri } from 'vscode';
 import { Configuration } from './configuration-settings';
 
 export class Notification {
-    public static async showWarningNoTranslationFile() {
-        window.showWarningMessage(
-            'There is no translation file *.json configured for this extension.\n' +
+
+    /**
+     * Show an info that there are no translation files configured in this project. If there are potential translation files found in the workspace 
+     * the prompt will ask if these files should be configured. Returns true if the user wants this files to be configured automatically.
+     * @param translationFileMap 
+     * @returns 
+     */
+    public static async showInfoNoTranslationFile(translationFileMap: Map<string, Uri> | undefined): Promise<boolean> {
+        if (translationFileMap && translationFileMap.size > 0) {
+            const translationFileIds = Array.from(translationFileMap.keys()).map(item => `"${item}"`).join(', ');
+            const message: string = `There are no translation files configured for this project. We found ${translationFileIds} in your i18n folder. Set these files as translation files?`;
+            const selection = await window.showInformationMessage(message, "Set a language files");
+            return !!selection;
+        }
+        else {
+            window.showInformationMessage(
+                'There is no translation file *.json configured for this extension.\n' +
                 'To use it, please navigate to your translation file and set it via the context menu\n' +
-                " or by calling 'lingua:selectLocaleFile'"
-        );
+                " or by calling 'lingua:selectLocaleFile'", "Got it!"
+            );
+            return false;
+        }
     }
 
     public static async showWarningNestedKeyStyle() {
@@ -20,8 +36,8 @@ export class Notification {
         await window
             .showWarningMessage(
                 'It appears your are using "flat" and "nested" translation keys at the same time.\n' +
-                    'At the moment Lingua only supports either "flat" or "nested" translations keys.\n' +
-                    'Please chose the key style of your choice in the settings.',
+                'At the moment Lingua only supports either "flat" or "nested" translations keys.\n' +
+                'Please chose the key style of your choice in the settings.',
                 actionDontNotifyAgain
             )
             .then(async (action) => {
@@ -42,8 +58,8 @@ export class Notification {
         await window
             .showWarningMessage(
                 'It appears you are using a "flat" translation key style.\n' +
-                    'We suggest you activate the "flat" translation key style option in the settings\n' +
-                    'to be able to use all Lingua commands',
+                'We suggest you activate the "flat" translation key style option in the settings\n' +
+                'to be able to use all Lingua commands',
                 actionChangeKey,
                 actionDontNotifyAgain
             )
