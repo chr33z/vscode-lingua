@@ -1,6 +1,5 @@
-import { TextEditor, DecorationOptions, Range, window, Position, Uri, workspace } from 'vscode';
+import { TextEditor, DecorationOptions, Range, window, Position, Uri } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
-import { LinguaSettings } from './lingua-settings';
 import { posix } from 'path';
 import { Configuration } from './configuration-settings';
 

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { workspace, languages, Disposable, window, Uri, TextDocument, commands, ConfigurationTarget } from 'vscode';
+import { workspace, languages, Disposable, window, Uri, TextDocument, TextEditor, ConfigurationTarget,TextDocumentChangeEvent, Event } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
 import { updateTranslationDecorations } from './decoration';
@@ -48,14 +48,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async (editor: TextEditor) => {
             gotoTranslation(settings, translationSets, editor.document, editor.selection);
         })
     );
 
     /* Set the currently opened file as a translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async (editor: TextEditor) => {
             const languageFileUri = editor.document.uri;
 
             const language = await window.showInputBox({
@@ -77,7 +77,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Create a translation for the selected translation identifier */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor: TextEditor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandCreateTranslation(translationSets, editor.document, editor.selection);
             });
@@ -86,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Change a translation for the selected translation identifier */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor: TextEditor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandChangeTranslation(translationSets, editor.document, editor.selection);
             });
@@ -95,7 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Convert a selected text to a translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor: TextEditor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandConvertToTranslation(translationSets, editor);
             });
@@ -135,7 +135,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     vscode.workspace.onDidChangeTextDocument(
-        async (event) => {
+        async (event: TextDocumentChangeEvent) => {
             const translationSetUri = translationSets.default.uri;
 
             // update either if content of current editor is changed or if content of

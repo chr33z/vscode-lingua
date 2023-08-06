@@ -8,7 +8,6 @@ import {
     CompletionItem,
     CompletionList,
     MarkdownString,
-    Selection,
     Range,
 } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';

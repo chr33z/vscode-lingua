@@ -1,4 +1,4 @@
-import { workspace, ConfigurationTarget } from 'vscode';
+import { workspace } from 'vscode';
 
 export class Configuration {
     public static useFlatTranslationKeys(): boolean {
