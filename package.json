@@ -7,7 +7,7 @@
         "email": "chr33z@gmail.com"
     },
     "publisher": "chr33z",
-    "version": "0.9.1",
+    "version": "1.0.1",
     "license": "MIT",
     "engines": {
         "vscode": "^1.81.0"
