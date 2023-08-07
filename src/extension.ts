@@ -175,8 +175,11 @@ function registerDocumentProvider(context: vscode.ExtensionContext) {
 }
 
 function registerAutocompleteProvider(context: vscode.ExtensionContext) {
-    let provider = languages.registerCompletionItemProvider('html', new AutoCompleteProvider(translationSets));
-    context.subscriptions.push(provider);
+    let providerTs = languages.registerCompletionItemProvider({ language: 'typescript', scheme: 'file' }, new AutoCompleteProvider(translationSets));
+    context.subscriptions.push(providerTs);
+
+    let providerHtml = languages.registerCompletionItemProvider({ language: 'html', scheme: 'file' }, new AutoCompleteProvider(translationSets));
+    context.subscriptions.push(providerHtml);
 }
 
 function analyseTranslationUsage() {
