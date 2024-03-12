@@ -1,5 +1,5 @@
 import { TranslationSets } from '../translation-sets';
-import { TextEditor, window, WorkspaceEdit, workspace } from 'vscode';
+import { TextEditor, window, WorkspaceEdit, workspace, Range, Position } from 'vscode';
 import { promtTranslationSet, updateTranslationFile } from './translation-command-helper';
 import { truncateText, isTranslationIdentifier } from '../translation-utils';
 import { Configuration } from '../../configuration-settings';
@@ -32,7 +32,16 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
                 .then(async (_) => {
                     // replace source selection with translation construct
                     const edit = new WorkspaceEdit();
-                    edit.replace(editor.document.uri, editor.selection, `{{ '${translationKey}' | translate }}`);
+                    
+                    if (isSelectedTextBinded(editor)) {
+                        edit.replace(
+                            editor.document.uri,
+                            new Range(editor.selection.start, new Position(editor.selection.end.line, editor.selection.end.character + 1)),
+                            `${translationKey}' | translate`
+                        );
+                    } else {
+                        edit.replace(editor.document.uri, editor.selection, `{{ '${translationKey}' | translate }}`);
+                    }
                     await workspace.applyEdit(edit);
 
                     return Promise.resolve();
@@ -49,4 +58,10 @@ export async function convertToTranslation(translationSets: TranslationSets, edi
             );
         }
     }
+}
+
+function isSelectedTextBinded(editor: TextEditor): boolean {
+    const selectionStartPos = editor.selection.start;
+    const prevText = (editor.document.getText(new Range(new Position(selectionStartPos.line, selectionStartPos.character - 4), selectionStartPos)));
+    return prevText === "]=\"'";
 }
