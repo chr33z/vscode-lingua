@@ -8,7 +8,11 @@ var TextEncoder = textEncoding.TextEncoder;
 export class LinguaSettings {
     public translationFiles: { lang: string; uri: string }[] = [];
 
-    public async addTranslationSet(language: string, relativePath: string) {
+    public async addTranslationSet(language: string | undefined, fileUri: Uri) {
+        if (!language || !fileUri) {
+            return;
+        }
+        const relativePath = workspace.asRelativePath(fileUri.path);
         const entry = this.translationFiles.find((file) => file.lang === language);
         if (entry) {
             entry.uri = relativePath;
@@ -48,7 +52,7 @@ async function writeSettings(settings: LinguaSettings) {
             const uri = Uri.file(`${workspace.rootPath}/.lingua`);
             await workspace.fs.writeFile(uri, new TextEncoder('utf-8').encode(JSON.stringify(settings, null, 2)));
             Notification.showLinguaSettingCreated();
-        } catch (e) {
+        } catch (e: any) {
             window.showErrorMessage(e);
         }
     }

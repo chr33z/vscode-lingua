@@ -1,4 +1,4 @@
-import { workspace, ConfigurationTarget } from 'vscode';
+import { workspace } from 'vscode';
 
 export class Configuration {
     public static useFlatTranslationKeys(): boolean {
@@ -39,5 +39,9 @@ export class Configuration {
 
     public static jsonIndentation(): number {
         return workspace.getConfiguration('lingua').get<number>('jsonIndentation', 2);
+    }
+
+    public static sortKeys(): boolean {
+        return workspace.getConfiguration('lingua').get<boolean>('sortKeys', false);
     }
 }

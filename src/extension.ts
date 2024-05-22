@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { workspace, languages, Disposable, window, Uri, TextDocument, commands, ConfigurationTarget } from 'vscode';
+import { workspace, languages, Disposable, window, Uri, TextDocument, TextEditor, ConfigurationTarget, TextDocumentChangeEvent } from 'vscode';
 import { TranslationSets } from './translation/translation-sets';
 import { LinguaSettings } from './lingua-settings';
 import { updateTranslationDecorations } from './decoration';
@@ -11,7 +11,7 @@ import { TranslationKeyStyle } from './translation/translation-key-style';
 import { createTranslation as commandCreateTranslation } from './translation/commands/translation-command-create';
 import { convertToTranslation as commandConvertToTranslation } from './translation/commands/translation-command-convert';
 import { locateTranslation as commandLocateTranslation } from './translation/commands/translation-command-locate';
-import { isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
+import { findTranslationFiles, isNgxTranslateProject, setExtensionEnabled } from './extension-utils';
 import { Configuration } from './configuration-settings';
 import { Notification } from './user-notifications';
 import { commandChangeTranslation } from './translation/commands/translation-command-change';
@@ -48,36 +48,33 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Go to a translation entry in the default translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.gotoTranslation', async (editor: TextEditor) => {
             gotoTranslation(settings, translationSets, editor.document, editor.selection);
         })
     );
 
     /* Set the currently opened file as a translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.selectLocaleFile', async (editor: TextEditor) => {
             const languageFileUri = editor.document.uri;
 
             const language = await window.showInputBox({
                 placeHolder: "Enter a language identifier of this file (e.g. 'de' or 'en')",
             });
-            if (language) {
-                // TODO: fix this uri madness
-                const relativePath = workspace.asRelativePath(languageFileUri.path);
-
-                settings.addTranslationSet(language, relativePath);
-                if (translationSets.count <= 1) {
-                    workspace
-                        .getConfiguration('lingua')
-                        .update('defaultLanguage', language, ConfigurationTarget.Global);
-                }
+            await settings.addTranslationSet(language, languageFileUri);
+            if (translationSets.count <= 1) {
+                workspace
+                    .getConfiguration('lingua')
+                    .update('defaultLanguage', language, ConfigurationTarget.Global);
             }
         })
     );
 
+
+
     /* Create a translation for the selected translation identifier */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor: TextEditor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandCreateTranslation(translationSets, editor.document, editor.selection);
             });
@@ -86,7 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Change a translation for the selected translation identifier */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.changeTranslation', async (editor: TextEditor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandChangeTranslation(translationSets, editor.document, editor.selection);
             });
@@ -95,7 +92,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* Convert a selected text to a translation file */
     context.subscriptions.push(
-        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor) => {
+        vscode.commands.registerTextEditorCommand('lingua.convertToTranslation', async (editor: TextEditor) => {
             updateTranslationSets(settings, translationSets).then(() => {
                 commandConvertToTranslation(translationSets, editor);
             });
@@ -135,7 +132,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     vscode.workspace.onDidChangeTextDocument(
-        async (event) => {
+        async (event: TextDocumentChangeEvent) => {
             const translationSetUri = translationSets.default.uri;
 
             // update either if content of current editor is changed or if content of
@@ -166,7 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 function registerDocumentProvider(context: vscode.ExtensionContext) {
     const provider = new AnalysisReportProvider(settings, translationSets);
@@ -178,8 +175,11 @@ function registerDocumentProvider(context: vscode.ExtensionContext) {
 }
 
 function registerAutocompleteProvider(context: vscode.ExtensionContext) {
-    let provider = languages.registerCompletionItemProvider('html', new AutoCompleteProvider(translationSets));
-    context.subscriptions.push(provider);
+    let providerTs = languages.registerCompletionItemProvider({ language: 'typescript', scheme: 'file' }, new AutoCompleteProvider(translationSets));
+    context.subscriptions.push(providerTs);
+
+    let providerHtml = languages.registerCompletionItemProvider({ language: 'html', scheme: 'file' }, new AutoCompleteProvider(translationSets));
+    context.subscriptions.push(providerHtml);
 }
 
 function analyseTranslationUsage() {
@@ -220,7 +220,14 @@ async function updateTranslationSets(settings: LinguaSettings, translationSets: 
     if (settings.translationFiles.length) {
         await translationSets.build(settings);
     } else {
-        Notification.showWarningNoTranslationFile();
+        const translationFileMap = await findTranslationFiles();
+        const configureAutomatically = await Notification.showInfoNoTranslationFile(translationFileMap);
+        if (configureAutomatically) {
+            translationFileMap?.forEach((fileUri, language) => {
+                settings.addTranslationSet(language, fileUri);
+            });
+        }
+
         return Promise.reject();
     }
 
@@ -235,7 +242,7 @@ export async function notifyUserTranslationKeyStyle() {
     switch (keyStyle) {
         case TranslationKeyStyle.Flat:
             if (!Configuration.useFlatTranslationKeys()) {
-                await Notification.showWarningFlatKeyStyle().then(() => {});
+                await Notification.showWarningFlatKeyStyle().then(() => { });
             }
             break;
         case TranslationKeyStyle.Mixed:
