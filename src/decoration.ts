@@ -1,9 +1,10 @@
-import { TextEditor, DecorationOptions, Range, window, Position, Uri } from 'vscode';
+import { TextEditor, DecorationOptions, Range, window, Position, Uri, TextEditorDecorationType } from 'vscode';
 import { TranslationSet } from './translation/translation-set';
 import { posix } from 'path';
 import { Configuration } from './configuration-settings';
 
-
+let translationDecoration: TextEditorDecorationType;
+let potentialIdentifierDecoration: TextEditorDecorationType;
 
 /**
  * Scan editor content for possible translations paths and decorate the translation paths
@@ -17,6 +18,15 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
     if (!editor || translationSet.isEmpty) {
         return;
     }
+
+    if (!translationDecoration || !potentialIdentifierDecoration) {
+        translationDecoration = createTranslationDecoration();
+        potentialIdentifierDecoration = createPotentialIdentifierDecoration();
+    }
+
+    // Clear previous decorations
+    editor.setDecorations(translationDecoration, []);
+    editor.setDecorations(potentialIdentifierDecoration, []);
 
     const regEx = /['|"|`]([a-zA-Z0-9\.\_\-]+)['|"|`]/gm;
     const text = editor.document.getText();
@@ -53,8 +63,8 @@ export function updateTranslationDecorations(editor: TextEditor, translationSet:
         }
     }
 
-    editor.setDecorations(createTranslationDecoration(), translationDecorations);
-    editor.setDecorations(createPotentialIdentifierDecoration(), identifierDecorations);
+    editor.setDecorations(translationDecoration, translationDecorations);
+    editor.setDecorations(potentialIdentifierDecoration, identifierDecorations);
 }
 
 function createTranslationDecoration() {
