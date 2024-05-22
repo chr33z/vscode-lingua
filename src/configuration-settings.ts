@@ -1,4 +1,4 @@
-import { workspace } from 'vscode';
+import { ColorThemeKind, workspace } from 'vscode';
 
 export class Configuration {
     public static useFlatTranslationKeys(): boolean {
@@ -43,5 +43,15 @@ export class Configuration {
 
     public static sortKeys(): boolean {
         return workspace.getConfiguration('lingua').get<boolean>('sortKeys', false);
+    }
+
+    public static getInlineColor(theme: ColorThemeKind): string {
+        const themeName = ColorThemeKind[theme];
+        return workspace.getConfiguration('lingua').get<string>(`inlineColor.${themeName}`, "#1a8582");
+    }
+
+    public static getPotentialIdentifierColor(theme: ColorThemeKind): string {
+        const themeName = ColorThemeKind[theme];
+        return workspace.getConfiguration('lingua').get<string>(`potentialIdentifierColor.${themeName}`, "#b7950b");
     }
 }

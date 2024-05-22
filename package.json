@@ -175,6 +175,46 @@
           "type": "boolean",
           "default": true,
           "description": "Sort keys in json files"
+        },
+        "lingua.inlineColor.Light": {
+          "type": "string",
+          "default": "#146462",
+          "description": "Color of inline translations in light mode"
+        },
+        "lingua.inlineColor.Dark": {
+          "type": "string",
+          "default": "#1a8582",
+          "description": "Color of inline translations in dark mode"
+        },
+        "lingua.inlineColor.HighContrast": {
+          "type": "string",
+          "default": "#146462",
+          "description": "Color of inline translations in light mode"
+        },
+        "lingua.inlineColor.HighContrastLight": {
+          "type": "string",
+          "default": "#1a8582",
+          "description": "Color of inline translations in dark mode"
+        },
+        "lingua.potentialIdentifierColor.Light": {
+          "type": "string",
+          "default": "#b7950b",
+          "description": "Color of a potential identifier in light mode"
+        },
+        "lingua.potentialIdentifierColor.Dark": {
+          "type": "string",
+          "default": "#b7950b",
+          "description": "Color of a potential identifier in dark mode"
+        },
+        "lingua.potentialIdentifierColor.HighContrast": {
+          "type": "string",
+          "default": "#b7950b",
+          "description": "Color of a potential identifier in light mode"
+        },
+        "lingua.potentialIdentifierColor.HighContrastLight": {
+          "type": "string",
+          "default": "#b7950b",
+          "description": "Color of a potential identifier in dark mode"
         }
       }
     }
