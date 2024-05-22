@@ -170,6 +170,11 @@
           "type": "number",
           "default": 2,
           "description": "Indentation used to write json files"
+        },
+        "lingua.sortKeys": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sort keys in json files"
         }
       }
     }
@@ -205,6 +210,7 @@
     "@types/lodash": "^4.14.149",
     "chai": "^5.1.0",
     "json-source-map": "^0.6.1",
+    "json-stable-stringify": "^1.1.1",
     "lodash": "^4.17.21",
     "text-encoding": "^0.7.0",
     "vscode-test": "^1.6.1"
