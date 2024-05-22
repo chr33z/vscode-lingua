@@ -70,8 +70,6 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-
-
     /* Create a translation for the selected translation identifier */
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand('lingua.createTranslation', async (editor: TextEditor) => {
