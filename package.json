@@ -1,207 +1,212 @@
 {
-    "name": "lingua-vscode",
-    "displayName": "Lingua - Managing ngx-translations",
-    "description": "An extension for managing angular translations created with ngx-translate",
-    "author": {
-        "name": "Christopher Gebhardt",
-        "email": "chr33z@gmail.com"
-    },
-    "publisher": "chr33z",
-    "version": "1.0.1",
-    "license": "MIT",
-    "engines": {
-        "vscode": "^1.81.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/chr33z/vscode-lingua"
-    },
-    "categories": [
-        "Other"
+  "name": "lingua-vscode",
+  "displayName": "Lingua - Managing ngx-translations",
+  "description": "An extension for managing angular translations created with ngx-translate",
+  "author": {
+    "name": "Christopher Gebhardt",
+    "email": "chr33z@gmail.com"
+  },
+  "publisher": "chr33z",
+  "version": "1.0.2",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.81.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chr33z/vscode-lingua"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "images/icon.png",
+  "keywords": [
+    "angular",
+    "ngx-translate",
+    "translation",
+    "translate"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "lingua.analyse",
+        "title": "Lingua: Analyse translation usage"
+      },
+      {
+        "command": "lingua.findDuplicates",
+        "title": "Lingua: Find duplicate translations"
+      },
+      {
+        "command": "lingua.gotoTranslation",
+        "title": "Lingua: Goto translation"
+      },
+      {
+        "command": "lingua.selectLocaleFile",
+        "title": "Lingua: Set file as language file"
+      },
+      {
+        "command": "lingua.createTranslation",
+        "title": "Lingua: Create translation"
+      },
+      {
+        "command": "lingua.changeTranslation",
+        "title": "Lingua: Change translation"
+      },
+      {
+        "command": "lingua.convertToTranslation",
+        "title": "Lingua: Convert text to translation"
+      },
+      {
+        "command": "lingua.selectDefaultLanguage",
+        "title": "Lingua: Select your default language"
+      }
     ],
-    "icon": "images/icon.png",
-    "keywords": [
-        "angular",
-        "ngx-translate",
-        "translation",
-        "translate"
-    ],
-    "activationEvents": [
-        "*"
-    ],
-    "main": "./dist/extension.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "lingua.analyse",
-                "title": "Lingua: Analyse translation usage"
-            },
-            {
-                "command": "lingua.findDuplicates",
-                "title": "Lingua: Find duplicate translations"
-            },
-            {
-                "command": "lingua.gotoTranslation",
-                "title": "Lingua: Goto translation"
-            },
-            {
-                "command": "lingua.selectLocaleFile",
-                "title": "Lingua: Set file as language file"
-            },
-            {
-                "command": "lingua.createTranslation",
-                "title": "Lingua: Create translation"
-            },
-            {
-                "command": "lingua.changeTranslation",
-                "title": "Lingua: Change translation"
-            },
-            {
-                "command": "lingua.convertToTranslation",
-                "title": "Lingua: Convert text to translation"
-            },
-            {
-                "command": "lingua.selectDefaultLanguage",
-                "title": "Lingua: Select your default language"
-            }
-        ],
-        "menus": {
-            "editor/context": [
-                {
-                    "command": "lingua.gotoTranslation",
-                    "group": "lingua",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.selectLocaleFile",
-                    "group": "lingua",
-                    "when": "resourceExtname == .json && lingua:enabled"
-                },
-                {
-                    "command": "lingua.createTranslation",
-                    "group": "lingua",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.changeTranslation",
-                    "group": "lingua",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.convertToTranslation",
-                    "group": "lingua",
-                    "when": "lingua:enabled"
-                }
-            ],
-            "commandPalette": [
-                {
-                    "command": "lingua.gotoTranslation",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.selectLocaleFile",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.createTranslation",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.changeTranslation",
-                    "when": "lingua:enabled"
-                },
-                {
-                    "command": "lingua.convertToTranslation",
-                    "when": "lingua:enabled"
-                }
-            ]
+    "menus": {
+      "editor/context": [
+        {
+          "command": "lingua.gotoTranslation",
+          "group": "lingua",
+          "when": "lingua:enabled"
         },
-        "colors": [
-            {
-                "id": "lingua.lookupColor",
-                "description": "Color decoration for translation lookups",
-                "defaults": {
-                    "dark": "#1a8582",
-                    "light": "#146462",
-                    "highContrast": "#15c1bc"
-                }
-            }
-        ],
-        "configuration": {
-            "title": "Lingua",
-            "properties": {
-                "lingua.defaultLanguage": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Identifier for the selected default language. (e.g. 'en', 'fr', ...)"
-                },
-                "lingua.analysisExtensions": {
-                    "type": "string",
-                    "default": "html,ts",
-                    "enum": [
-                        "html",
-                        "ts",
-                        "html,ts"
-                    ]
-                },
-                "lingua.decoration.maxLookupLength": {
-                    "type": "number",
-                    "default": 80,
-                    "maximum": 240,
-                    "minimum": 0,
-                    "description": "The maximum length of the inline translation."
-                },
-                "lingua.decoration.showInlineTranslation": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable or disable the inline translation."
-                },
-                "lingua.flatTranslationKeys": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable if you are using a flat translation key hierarchy in your json, e.g. 'this.is.a.flat.translation.key'"
-                },
-                "lingua.warnAboutFlatAndMixedTranslationKeys": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Should Lingua warn you about flat or mixed translation key styles?"
-                },
-                "lingua.jsonIndentation": {
-                    "type": "number",
-                    "default": 2,
-                    "description": "Indentation used to write json files"
-                }
-            }
+        {
+          "command": "lingua.selectLocaleFile",
+          "group": "lingua",
+          "when": "resourceExtname == .json && lingua:enabled"
+        },
+        {
+          "command": "lingua.createTranslation",
+          "group": "lingua",
+          "when": "lingua:enabled"
+        },
+        {
+          "command": "lingua.changeTranslation",
+          "group": "lingua",
+          "when": "lingua:enabled"
+        },
+        {
+          "command": "lingua.convertToTranslation",
+          "group": "lingua",
+          "when": "lingua:enabled"
         }
+      ],
+      "commandPalette": [
+        {
+          "command": "lingua.gotoTranslation",
+          "when": "lingua:enabled"
+        },
+        {
+          "command": "lingua.selectLocaleFile",
+          "when": "lingua:enabled"
+        },
+        {
+          "command": "lingua.createTranslation",
+          "when": "lingua:enabled"
+        },
+        {
+          "command": "lingua.changeTranslation",
+          "when": "lingua:enabled"
+        },
+        {
+          "command": "lingua.convertToTranslation",
+          "when": "lingua:enabled"
+        }
+      ]
     },
-    "scripts": {
-        "vscode:prepublish": "yarn run package",
-        "compile": "webpack",
-        "watch": "webpack --watch",
-        "package": "webpack --mode production --devtool hidden-source-map",
-        "compile-tests": "tsc -p . --outDir out",
-        "watch-tests": "tsc -p . -w --outDir out",
-        "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
-        "lint": "eslint src --ext ts",
-        "test": "node ./out/test/runTest.js"
-    },
-    "devDependencies": {
-        "@types/vscode": "^1.81.0",
-        "@typescript-eslint/eslint-plugin": "^5.59.8",
-        "@typescript-eslint/parser": "^5.59.8",
-        "eslint": "^8.41.0",
-        "glob": "^8.1.0",
-        "mocha": "^10.2.0",
-        "typescript": "^5.1.3",
-        "ts-loader": "^9.4.3",
-        "webpack": "^5.85.0",
-        "webpack-cli": "^5.1.1",
-        "@vscode/test-electron": "^2.3.2"
-    },
-    "dependencies": {
-        "@types/lodash": "^4.14.149",
-        "json-source-map": "^0.6.1",
-        "lodash": "^4.17.21",
-        "text-encoding": "^0.7.0"
+    "colors": [
+      {
+        "id": "lingua.lookupColor",
+        "description": "Color decoration for translation lookups",
+        "defaults": {
+          "dark": "#1a8582",
+          "light": "#146462",
+          "highContrast": "#15c1bc"
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Lingua",
+      "properties": {
+        "lingua.defaultLanguage": {
+          "type": "string",
+          "default": "",
+          "description": "Identifier for the selected default language. (e.g. 'en', 'fr', ...)"
+        },
+        "lingua.analysisExtensions": {
+          "type": "string",
+          "default": "html,ts",
+          "enum": [
+            "html",
+            "ts",
+            "html,ts"
+          ]
+        },
+        "lingua.decoration.maxLookupLength": {
+          "type": "number",
+          "default": 80,
+          "maximum": 240,
+          "minimum": 0,
+          "description": "The maximum length of the inline translation."
+        },
+        "lingua.decoration.showInlineTranslation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the inline translation."
+        },
+        "lingua.flatTranslationKeys": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable if you are using a flat translation key hierarchy in your json, e.g. 'this.is.a.flat.translation.key'"
+        },
+        "lingua.warnAboutFlatAndMixedTranslationKeys": {
+          "type": "boolean",
+          "default": true,
+          "description": "Should Lingua warn you about flat or mixed translation key styles?"
+        },
+        "lingua.jsonIndentation": {
+          "type": "number",
+          "default": 2,
+          "description": "Indentation used to write json files"
+        }
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.12",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/vscode": "^1.81.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "@vscode/test-electron": "^2.3.2",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "ts-loader": "^9.4.3",
+    "typescript": "^5.1.3",
+    "webpack": "^5.85.0",
+    "webpack-cli": "^5.1.1"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.149",
+    "chai": "^5.1.0",
+    "json-source-map": "^0.6.1",
+    "lodash": "^4.17.21",
+    "text-encoding": "^0.7.0",
+    "vscode-test": "^1.6.1"
+  }
 }
