@@ -215,6 +215,11 @@
           "type": "string",
           "default": "#b7950b",
           "description": "Color of a potential identifier in dark mode"
+        },
+        "lingua.autocomplete.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable autocomplete for translation keys"
         }
       }
     }
