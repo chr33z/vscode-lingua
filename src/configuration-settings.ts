@@ -54,4 +54,8 @@ export class Configuration {
         const themeName = ColorThemeKind[theme];
         return workspace.getConfiguration('lingua').get<string>(`potentialIdentifierColor.${themeName}`, "#b7950b");
     }
+
+    public static getAutocompleteEnabled(): boolean {
+        return workspace.getConfiguration('lingua').get<boolean>('autocomplete.enabled', true);
+    }
 }
