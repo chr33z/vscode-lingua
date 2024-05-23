@@ -72,13 +72,13 @@ export default class AutoCompleteProvider implements CompletionItemProvider {
         const lastToken = token[token.length - 1];
 
         const tokenStartsWithQuote = function (word: string): boolean {
-            const reg = /^[\"\']/;
+            const reg = /^[\"\'\`]/;
             const match = word.match(reg);
             return match ? true : false;
         };
 
         if (tokenStartsWithQuote(lastToken)) {
-            return lastToken.replace(/['"]/g, "") || "";
+            return lastToken.replace(/['"`]/g, "") || "";
         }
 
         return undefined;
